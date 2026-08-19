@@ -1,0 +1,77 @@
+/* ──────────────────────────────────────────────────────────────────
+   TokenHub Motion — the timing table, as utilities.
+   Imported by styles.css; consumes the --th-dur-* / --th-ease-* tokens.
+
+   WHEN TO ANIMATE (the six sanctioned moments — nothing else moves):
+     1. Content entrance      .th-in            280ms ease-out
+     2. List entrance         .th-stagger       280ms + 28ms per item
+     3. Overlay entrance      .th-in-overlay    280ms spring (modal, drawer, toast)
+     4. Press feedback        .th-press         150ms, scale(0.98)
+     5. Hover lift            .th-lift          200ms, shadow + 1px rise
+     6. Pending / streaming   .th-shimmer .th-spin .th-caret
+
+   Numbers counting up (560ms) live in components (MetricStrip/Statistic),
+   not here — they are data settling, not chrome.
+   ────────────────────────────────────────────────────────────────── */
+
+@keyframes th-in-up { from { opacity: 0; transform: translateY(6px) } to { opacity: 1; transform: none } }
+@keyframes th-in-fade { from { opacity: 0 } to { opacity: 1 } }
+@keyframes th-in-scale { from { opacity: 0; transform: translateY(8px) scale(0.98) } to { opacity: 1; transform: none } }
+@keyframes th-shimmer { from { background-position: 100% 0 } to { background-position: -100% 0 } }
+@keyframes th-spin { to { transform: rotate(360deg) } }
+@keyframes th-caret { 50% { opacity: 0 } }
+@keyframes th-indeterminate { 0% { transform: translateX(-60%) } 100% { transform: translateX(200%) } }
+
+/* 1 · content entrance — a card, a panel, a result appearing */
+.th-in { animation: th-in-up var(--th-dur-3) var(--th-ease-out) both }
+.th-in-fade { animation: th-in-fade var(--th-dur-2) var(--th-ease) both }
+
+/* 2 · list entrance — put on the container, children come in one after another.
+   Capped at 12 items: past that the last row would lag noticeably. */
+.th-stagger > * { animation: th-in-up var(--th-dur-3) var(--th-ease-out) both }
+.th-stagger > :nth-child(1) { animation-delay: 0ms }
+.th-stagger > :nth-child(2) { animation-delay: calc(var(--th-stagger) * 1) }
+.th-stagger > :nth-child(3) { animation-delay: calc(var(--th-stagger) * 2) }
+.th-stagger > :nth-child(4) { animation-delay: calc(var(--th-stagger) * 3) }
+.th-stagger > :nth-child(5) { animation-delay: calc(var(--th-stagger) * 4) }
+.th-stagger > :nth-child(6) { animation-delay: calc(var(--th-stagger) * 5) }
+.th-stagger > :nth-child(7) { animation-delay: calc(var(--th-stagger) * 6) }
+.th-stagger > :nth-child(8) { animation-delay: calc(var(--th-stagger) * 7) }
+.th-stagger > :nth-child(9) { animation-delay: calc(var(--th-stagger) * 8) }
+.th-stagger > :nth-child(10) { animation-delay: calc(var(--th-stagger) * 9) }
+.th-stagger > :nth-child(11) { animation-delay: calc(var(--th-stagger) * 10) }
+.th-stagger > :nth-child(n + 12) { animation-delay: calc(var(--th-stagger) * 11) }
+
+/* 3 · overlay entrance — spring, only for things that sit above the page */
+.th-in-overlay { animation: th-in-scale var(--th-dur-3) var(--th-ease-spring) both }
+
+/* 4 · press — every clickable surface may take this; it never changes color */
+.th-press { transition: transform var(--th-dur-1) var(--th-ease) }
+.th-press:active { transform: scale(0.98) }
+
+/* 5 · hover lift — cards and tiles only, never rows or buttons */
+.th-lift { transition: box-shadow var(--th-dur-2) var(--th-ease), transform var(--th-dur-2) var(--th-ease), border-color var(--th-dur-2) var(--th-ease) }
+.th-lift:hover { box-shadow: var(--th-shadow-soft); transform: translateY(-1px) }
+
+/* 6 · pending states */
+.th-shimmer { background: linear-gradient(90deg, var(--th-gray-50) 25%, var(--th-gray-100) 37%, var(--th-gray-50) 63%); background-size: 400% 100%; animation: th-shimmer 1.4s ease infinite }
+.th-shimmer-text { background: linear-gradient(90deg, var(--color-fg-muted) 0%, var(--color-fg-muted) 30%, var(--th-teal-600) 50%, var(--color-fg-muted) 70%, var(--color-fg-muted) 100%); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: th-shimmer 2s linear infinite }
+.th-spin { display: inline-block; animation: th-spin 1.1s linear infinite }
+.th-caret { display: inline-block; width: 2px; height: 1em; vertical-align: text-bottom; margin-left: 2px; background: var(--th-teal-600); animation: th-caret 1s step-end infinite }
+.th-indeterminate { position: relative; overflow: hidden }
+.th-indeterminate::after { content: ""; position: absolute; inset: 0 auto 0 0; width: 40%; background: var(--th-teal-500); border-radius: inherit; animation: th-indeterminate 1.2s var(--th-ease) infinite }
+
+/* Skeleton → content: mount the real content with .th-in-fade and the swap
+   reads as a crossfade rather than a jump. */
+
+/* ── Accessibility floor ──────────────────────────────────────────
+   Honoured system-wide: no entrance, no shimmer, no count-up.
+   Components read the same media query in JS before animating numbers. */
+@media (prefers-reduced-motion: reduce) {
+  .th-in, .th-in-fade, .th-stagger > *, .th-in-overlay, .th-shimmer, .th-shimmer-text, .th-spin, .th-caret, .th-indeterminate::after {
+    animation: none !important;
+  }
+  .th-shimmer-text { -webkit-text-fill-color: currentColor; color: var(--color-fg-muted) }
+  .th-press, .th-lift { transition: none }
+  .th-lift:hover { transform: none }
+}

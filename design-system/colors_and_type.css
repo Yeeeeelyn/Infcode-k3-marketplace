@@ -1,0 +1,502 @@
+/* ──────────────────────────────────────────────────────────────────
+   TokenHub Design Tokens
+   Sourced from /5.8-Tokenhub/* in the InfOne.fig file.
+   Two layers:
+     1. Primitive tokens — raw hex / px values
+     2. Semantic tokens  — what to actually reach for in components
+   ────────────────────────────────────────────────────────────────── */
+
+@import url("./fonts/fonts.css");
+
+:root {
+  /* ── Brand scale ─────────────────────────────────────────────
+     THE re-skin surface: to build a sibling product with the same
+     style but a different primary color, override ONLY --brand-*
+     (plus the logo file) in a brand.css loaded after styles.css.
+     Everything else (grays, type, radii, shadows, motion) is the
+     shared style and should not change per product.
+     Default = TokenHub blue (standard #3B83FF; scale derived in oklch). */
+  --brand-50:  #E3EEFF;   /* tint fill — sidebar active, chips */
+  --brand-100: #C7DDFF;   /* tint border / active count pill */
+  --brand-200: #9FC5FF;   /* CTA pill fill */
+  --brand-300: #85B5FF;   /* logo accent edge, decorative blobs */
+  --brand-400: #5F9CFF;   /* progress/steps connector */
+  --brand-500: #3B83FF;   /* primary — controls, focus, accents */
+  --brand-600: #1F62E0;   /* strong — links, text on tint */
+  --brand-700: #16409C;   /* deepest — selected/pressed */
+
+  /* Teal aliases — what components actually consume; keep pointing at brand */
+  --th-teal-50:  var(--brand-50);
+  --th-teal-100: var(--brand-100);
+  --th-teal-200: var(--brand-200);
+  --th-teal-300: var(--brand-300);
+  --th-teal-400: var(--brand-400);
+  --th-teal-500: var(--brand-500);
+  --th-teal-600: var(--brand-600);
+  --th-teal-700: var(--brand-700);
+
+  /* ── Neutral scale — PURE gray, zero chroma ────────────────
+     Every rung is achromatic (oklch chroma 0, R=G=B): the neutral
+     ladder carries NO brand or theme lean, so the only color on a
+     console page comes from the brand accent and the semantic
+     status/chart/category tokens. Lightness values are inherited
+     from the previous cool ramp, so contrast ratios are unchanged.
+     Never reintroduce a hue tint here — not warm, not cool. The
+     rungs are close together on purpose: surface tiers must read
+     as tiers, never as a loud change.
+       white = card surface · bg = canvas AND navigation surface */
+  --th-white:    #FFFFFF;
+  --th-bg:       #FAFAFA;   /* canvas + navigation surface — barely off white; cards sit ON this */
+  --th-gray-50:  #EDEDED;   /* card border, divider — visibly darker than surface */
+  --th-gray-100: #E4E4E4;   /* nav border, hairlines */
+  --th-gray-150: #E8E8E8;   /* disabled control fill/border */
+  --th-gray-200: #DDDDDD;
+  --th-gray-250: #C6C6C6;   /* disabled text on white, subtle icons */
+  --th-gray-300: #9E9E9E;   /* muted text */
+  --th-gray-400: #888888;
+  --th-gray-500: #6E6E6E;   /* sidebar section heading (4.9:1 on white) */
+  --th-gray-600: #4F4F4F;
+  --th-gray-700: #383838;
+  --th-gray-800: #222222;
+  --th-gray-900: #191919;   /* primary text — near-black, never pure #000 */
+
+  /* Accent — pinks, blue, link */
+  --th-pink-50:  #FFEFEF;   /* avatar bg, rgb(255,239,239) */
+  --th-pink-100: #FFE4E4;   /* nav avatar bg, rgb(255,228,228) */
+  --th-pink-500: #F56C89;   /* decorative only — avatar tint, destructive fill */
+  --th-pink-600: #C0304F;   /* TEXT-safe rose — 5.1:1 on pink-50, 5.6:1 on white */
+  --th-blue-50:  rgba(88,182,248,0.20);   /* hero blob, rgb(88,182,248) @ 20% */
+  --th-blue-300: #5E81F4;   /* secondary blue */
+  --th-blue-500: #455CFF;   /* link, rgb(69,92,255) */
+  --th-blue-700: #1F46E0;   /* deeper informational, rgb(31,70,224) */
+
+  /* ── Spacing scale (mostly 4px-based, observed values) ──── */
+  --th-space-1: 4px;
+  --th-space-2: 8px;
+  --th-space-3: 10px;   /* sidebar item padding */
+  --th-space-4: 12px;
+  --th-space-6: 16px;   /* card gutter, nav padding */
+  --th-space-8: 28px;
+  --th-space-10: 40px;  /* nav item gap */
+  --th-space-12: 48px;  /* nav bar height */
+
+  /* ── Density scale — GEOMETRY ONLY (never font size) ──────
+     Two rungs: default (comfortable) and compact. Switch a page,
+     a card, or a single table with data-density="compact" — the
+     tokens below re-declare inside that scope and every component
+     that consumes them tightens together.
+     Rule: card padding is 12 (16 only on marketing surfaces); block gaps
+     only 8/12. Arbitrary 14/18/20/24 values are a violation. */
+  --th-row-h:      36px;  /* table / list row */
+  --th-row-pad-y:  8px;
+  --th-ctl-h-sm:   26px;  /* small button, chip control */
+  --th-ctl-h:      28px;  /* default input, button, select */
+  --th-ctl-h-lg:   32px;  /* prominent single field (copy field, search) */
+  --th-card-pad:   12px;  /* card inner padding */
+  --th-stack-gap:  8px;  /* blocks inside a card */
+  --th-field-gap:  12px;  /* form field rhythm */
+  --th-block-gap:  12px;  /* canvas level — cards to each other */
+
+  /* ── Radii — THREE rungs: 4 / 6 / 8 ─────────────────────────
+     The 10px rung is gone. Cards and controls now share 6px, so a
+     button sitting inside a card no longer reads rounder than the
+     card it sits in; only overlays (modal/drawer) step up to 8px.
+     Four role tokens over three values on purpose: sm and md hold
+     the same 6px but keep separate names, because controls and cards
+     are separate roles that may diverge again. Never hand-write a
+     radius — 10px and 12px are off the ladder. */
+  --th-radius-xs: 4px;    /* tags, nav items, inline chips */
+  --th-radius-sm: 6px;    /* buttons, inputs, selects */
+  --th-radius-md: 6px;    /* cards, panels, popovers */
+  --th-radius-lg: 8px;    /* modal, drawer — the only rung above cards */
+  --th-radius-pill: 6px;  /* legacy alias - B端矩形按钮，与 sm 一致 */
+  --th-radius-full: 9999px;
+
+  /* ── Borders ────────────────────────────────────────────── */
+  --th-border-hairline: 0.5px solid var(--th-gray-100);
+  --th-border-card:     0.5px solid var(--color-border-strong);  /* weakened + thinner; --color-border is alpha-based so it keeps reading against whichever surface sits behind the card */
+
+  /* ── Z-index scale (stacking order for overlays) ───────── */
+  --z-nav: 30; /* @kind other */        /* sticky top nav */
+  --z-dropdown: 40; /* @kind other */   /* Select menu, inline popovers anchored to a trigger */
+  --z-overlay: 50; /* @kind other */    /* modal/popover scrim */
+  --z-modal: 60; /* @kind other */      /* modal dialog, popover card (sits above its own scrim) */
+  --z-tooltip: 70; /* @kind other */    /* hover tooltips — always above dialogs */
+  --z-toast: 80; /* @kind other */      /* toast/notification stack — always topmost */
+
+  /* ── Shadows ────────────────────────────────────────────── */
+  /* Resting cards carry NO shadow — the 0.5px border + surface-color step against
+     the canvas is what separates a card, not elevation. Cards never use a shadow
+     at rest; --th-shadow-card is retained as a token (value: none) only so nothing
+     that still references var(--th-shadow-card) breaks — do not reintroduce a value.
+     Primary-button hover no longer uses a brand-tinted shadow either (see Button.jsx
+     — hover now darkens the fill instead); --th-shadow-key is likewise kept at none.
+     The three shadows that remain are all weakened one notch from the previous scale. */
+  --th-shadow-nav:   0 2px 16px rgba(0,0,0,0.03);                                          /* top nav (glass) */
+  --th-shadow-card:  none;                                                                        /* resting card — no elevation, see note above */
+  --th-shadow-soft:  0 2px 4px rgba(0,0,0,0.02), 0 6px 14px rgba(0,0,0,0.03);        /* hover, dropdowns, popovers */
+  --th-shadow-modal: 0 3px 8px rgba(0,0,0,0.04), 0 12px 28px rgba(0,0,0,0.05);      /* dialogs, drawers */
+  --th-shadow-key:   none;                                                                        /* removed — primary CTA hover uses a darkened fill instead, see Button.jsx */
+  --th-blur:         blur(50px); /* @kind other */
+
+  /* ── Motion ─────────────────────────────────────────────────
+     Three durations, three curves, one stagger step. Anything
+     longer than --th-dur-3 is a violation except --th-dur-count
+     (data settling into place, e.g. a KPI counting up). */
+  --th-dur-1: 150ms; /* @kind other */  /* hover, color, icon rotate */
+  --th-dur-2: 200ms; /* @kind other */  /* open/close, width, layout shift */
+  --th-dur-3: 280ms; /* @kind other */  /* entrances — modal, drawer, list items */
+  --th-dur-count: 560ms; /* @kind other */ /* number count-up — the only long one */
+  --th-stagger: 28ms; /* @kind other */ /* per-item delay in a list entrance */
+  --th-ease:        cubic-bezier(0.2, 0.7, 0.2, 1); /* @kind other */   /* default — hovers, fades */
+  --th-ease-out:    cubic-bezier(0.16, 1, 0.3, 1); /* @kind other */    /* entrances — fast out, long settle */
+  --th-ease-spring: cubic-bezier(0.34, 1.3, 0.36, 1); /* @kind other */ /* overlays — gentle overshoot, never bouncy */
+
+  /* ── Typography ─────────────────────────────────────────────
+     UI text uses the DEVICE's own system font — no CJK webfont is
+     downloaded. Apple resolves PingFang SC, Windows 微软雅黑,
+     Android its bundled sans. Do not add a webfont to this stack. */
+  --th-font-cn: -apple-system, BlinkMacSystemFont, "PingFang SC", "HarmonyOS Sans SC", "Microsoft YaHei", "微软雅黑", "Noto Sans CJK SC", "Source Han Sans SC", sans-serif;
+  --th-font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "HarmonyOS Sans SC", "Microsoft YaHei", "微软雅黑", "Noto Sans CJK SC", sans-serif;
+  --th-font-brand: "Sora", -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+  --th-font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace;
+
+  /* Size scale — one ladder, 11/12/13/15/18/24/32/48.
+     Each rung has exactly one job; 14px, 16px, 20px, 22px are not
+     on the ladder and must not be hand-written in components. */
+  --th-text-2xs:  11px;   /* dense table meta, secondary line under a value */
+  --th-text-xs:   12px;   /* nav, sidebar, labels, captions */
+  --th-text-sm:   13px;   /* form label, card subtitle */
+  --th-text-base: 13px;   /* primary body / regular UI text (weight 400) */
+  --th-text-md:   15px;   /* card title, section title (was 16) */
+  --th-text-lg:   18px;   /* page title (was 20) */
+  --th-text-xl:   24px;   /* dashboard headline number, greeting */
+  --th-text-2xl:  32px;   /* marketing section head */
+  --th-text-hero: 48px;   /* marketing headline (PingFang SC 700) */
+
+  /* ── Semantic / role tokens ─────────────────────────────── */
+  --color-bg:        var(--th-bg);
+  --color-surface:   var(--th-white);
+  --color-surface-nav: var(--th-bg);     /* NAVIGATION surface — rail, inline top bar: the same faint gray as the canvas, so nav and page floor are one plane and only CARDS are white. Never white. */
+  --color-sunken:    var(--th-gray-50);
+  --color-border:    color-mix(in srgb, var(--th-gray-900) 8%, transparent);  /* weakened from opaque gray-50; alpha-mixed off near-black text color so it self-adjusts to whatever surface sits behind it (incl. under [data-theme="dark"], where --th-gray-900 is redeclared near-white) — never redeclare this separately per theme */
+  --color-border-strong: color-mix(in srgb, var(--th-gray-900) 16%, transparent);  /* one step darker than --color-border — CARD OUTER FRAME ONLY; dividers, table rules and control borders stay on --color-border/--color-divider so the tiers keep reading apart */
+  --color-divider:   var(--th-gray-100);
+  --color-fg:        var(--th-gray-900);
+  --color-fg-muted:  var(--th-gray-500);
+  --color-fg-subtle: var(--th-gray-300);
+  --color-fg-disabled: var(--th-gray-250);
+  --color-row-hover: #F0F0F0;            /* table/list row hover — quieter than gray-50 */
+  --color-link:      var(--th-teal-600);  /* interactive accent converged on teal; --th-blue-* stays for blobs/informational */
+  --color-accent:    var(--th-teal-500);
+  --color-accent-soft: var(--th-teal-50);
+  --color-cta:       var(--th-teal-600);  /* 主按钮填充 — brand-600 #1F62E0。500 (#3B83FF) 配白字只有 3.6:1，按钮标签是 12/13px 的正文字号，AA 要求 4.5:1；600 + 白字 = 5.5:1。brand-500 仍是身份色（focus ring、选中 tint、Steps、图表强调） */
+  --color-cta-fg:    #FFFFFF;
+
+  /* ── Surface layers ────────────────────────────────────────
+     A page is not "canvas + white cards" alone: a card is divided from
+     the inside using a ladder of NEUTRAL steps instead of being cut
+     into more cards. Never stack more than two of these in one card.
+     Every step is plain gray (no hue lean) and the steps are kept close
+     together on purpose — each is visibly a different tier, but no
+     single step should read as a loud change from its neighbor.
+       raised   — the card itself, sits above the canvas (white)
+       quiet    — the shallowest recess: mild emphasis block, summary line
+       inset    — a sunken panel INSIDE a card: code, log, preview, footnote row
+       well     — the deepest recess: content nested inside an inset panel,
+                  or a totals/subtotal row that should read below inset
+       selected — the interactive SELECTED state (brand-tinted teal-50) —
+                  this one is a state color, not a neutral depth tier; it
+                  does not sit on the raised→quiet→inset→well ladder */
+  --color-surface-raised:  var(--th-white);
+  --color-surface-quiet:   #F7F7F7;
+  --color-surface-inset:   #F1F1F1;
+  --color-surface-well:    #E9E9E9;
+  --color-surface-quiet-border: var(--th-gray-100);
+  --color-surface-selected: var(--th-teal-50);
+  --color-nav-selected: var(--th-gray-50);   /* NAVIGATION / POSITION selected state — NavRail, Sidebar, Tree, Cascader, Pager, Segmented-like "where am I" states. Neutral on purpose: brand color is reserved for things the user acts on, never for location. Pair with font-weight 500 and --color-fg text/icon; hover uses --color-row-hover so the two states stay apart */
+  --color-table-head:      var(--th-gray-50); /* header row — must read apart from page canvas, not just from the card; th-bg is too close to it */
+  --color-table-total:     var(--color-surface-well);           /* totals / subtotal row */
+
+  /* ── Category tones ────────────────────────────────────────
+     Pairs for classifying things that are NOT status and NOT
+     clickable: model vendors, model families, plan tiers, regions.
+     Derived from the chart palette, so category color and chart
+     series color stay the same language — and both stay outside the
+     brand's interactive budget (原则 1). Assign a fixed tone per
+     category once and never re-map it between pages.
+     Consumed via Tag tone="cat1"…"cat6". */
+  --th-cat-1-bg: color-mix(in srgb, var(--th-chart-1) 10%, var(--th-white));
+  --th-cat-1-fg: color-mix(in srgb, var(--th-chart-1) 78%, var(--th-gray-900));
+  --th-cat-2-bg: color-mix(in srgb, var(--th-chart-2) 10%, var(--th-white));
+  --th-cat-2-fg: color-mix(in srgb, var(--th-chart-2) 74%, var(--th-gray-900));
+  --th-cat-3-bg: color-mix(in srgb, var(--th-chart-3) 10%, var(--th-white));
+  --th-cat-3-fg: color-mix(in srgb, var(--th-chart-3) 74%, var(--th-gray-900));
+  --th-cat-4-bg: color-mix(in srgb, var(--th-chart-4) 12%, var(--th-white));
+  --th-cat-4-fg: color-mix(in srgb, var(--th-chart-4) 62%, var(--th-gray-900));
+  --th-cat-5-bg: color-mix(in srgb, var(--th-chart-5) 10%, var(--th-white));
+  --th-cat-5-fg: color-mix(in srgb, var(--th-chart-5) 80%, var(--th-gray-900));
+  --th-cat-6-bg: color-mix(in srgb, var(--th-chart-6) 10%, var(--th-white));
+  --th-cat-6-fg: color-mix(in srgb, var(--th-chart-6) 76%, var(--th-gray-900));
+
+  /* ── Heat ramp ─────────────────────────────────────────────
+     Five steps for INTENSITY, not status: usage per day, cost per
+     token, latency buckets, calendar activity. Single hue so a row
+     reads as "more/less", never as "good/bad".
+     Hue choice: the BRAND hue (blue, oklch h 262) — one product, one
+     accent family. Not a warm orange.
+     Two reasons — (a) an orange ramp inside a blue product reads as
+     a warning/alert gradient, which is exactly the "good/bad" read
+     this ramp must NOT carry; (b) it keeps the whole system on one
+     cool axis, while staying a clearly different hue from the
+     interactive brand blue (原则 1: charts/intensity never borrow
+     the interactive color). Every step stays light enough that
+     --th-gray-900 labels clear 7:1, so no consumer needs to flip
+     its text color (step 4 = 5.9:1, steps 0–3 ≥ 8:1). */
+  --th-heat-0: var(--th-gray-50);
+  --th-heat-1: oklch(0.955 0.028 262);
+  --th-heat-2: oklch(0.905 0.058 262);
+  --th-heat-3: oklch(0.825 0.100 262);
+  --th-heat-4: oklch(0.730 0.150 262);
+
+  /* ── Chart palette — 12 categorical series colors ──────────
+     For data visualization ONLY (charts, graphs, legends) — never
+     for UI states, buttons, or status chips. Assign by series
+     index in order (1→12); chart-12 (cool gray) doubles as the
+     "其他/未分类" bucket. Deliberately excludes the brand blue —
+     charts stay outside the interactive-color budget (原则 1).
+     Dark-mode values are redeclared under [data-theme="dark"].
+     Declared in oklch so lightness and chroma are held nearly
+     constant across the ring (L .56–.74, C .07–.17) and only HUE
+     varies — series read as equal-weight peers instead of the
+     mixed-brightness "BI default" look (a screaming gold next to a
+     muddy brown). Do not hand-write a hex here. */
+  --th-chart-1:  oklch(0.56 0.15 268);   /* indigo */
+  --th-chart-2:  oklch(0.66 0.13 178);   /* teal */
+  --th-chart-3:  oklch(0.63 0.16 300);   /* violet */
+  --th-chart-4:  oklch(0.74 0.13 76);    /* amber */
+  --th-chart-5:  oklch(0.66 0.14 148);   /* green */
+  --th-chart-6:  oklch(0.62 0.16 12);    /* rose */
+  --th-chart-7:  oklch(0.70 0.11 220);   /* sky */
+  --th-chart-8:  oklch(0.58 0.17 338);   /* magenta */
+  --th-chart-9:  oklch(0.68 0.11 112);   /* olive */
+  --th-chart-10: oklch(0.62 0.13 44);    /* terracotta */
+  --th-chart-11: oklch(0.56 0.07 252);   /* slate */
+  --th-chart-12: oklch(0.68 0 0);        /* pure gray — 其他/未分类 */
+
+  /* Focus ring — keyboard focus & focused inputs share one visual language */
+  --th-ring: 0 0 0 3px color-mix(in srgb, var(--brand-500) 22%, transparent); /* @kind other */
+
+  /* ── Status tones — THREE rungs, not two ──────────────────
+     -bg    tint background (chip, banner, toast surface)
+     -fg    TEXT/icon on that tint — deliberately dark, low chroma
+     -solid FILL for a painted shape: progress bar, ring, dot,
+            timeline node, destructive button
+     The third rung is why a warning bar used to come out mud-yellow:
+     components had only -fg to reach for and filled an 8px bar with a
+     text color. -solid values share a matched lightness (L .62–.74)
+     so a success bar and a warning bar carry equal visual weight.
+     Rule: never put text on -solid, never fill a shape with -fg. */
+  --color-success-bg: #E9FFF5;
+  --color-success-fg: #007F4A;
+  --color-warning-bg: #FFF6E7;
+  --color-warning-fg: #8A5A12;                 /* deepened: #D89F3D was 2.4:1 on white — failed AA */
+  --color-danger-bg:  var(--th-pink-50);
+  --color-danger-fg:  var(--th-pink-600);      /* deepened: pink-500 was 2.6:1 on pink-50 — failed AA */
+  --color-info-bg:    var(--th-teal-50);
+  --color-info-fg:    var(--th-teal-600);
+  --color-success-solid: oklch(0.66 0.14 158);
+  --color-warning-solid: oklch(0.74 0.14 76);
+  --color-danger-solid:  oklch(0.62 0.18 16);
+  --color-info-solid:    var(--brand-500);
+
+  /* ── Neutral data ink ─────────────────────────────────────
+     Sparklines, un-emphasised series, and the empty part of a bar or
+     ring. NOT --th-gray-300: that is muted TEXT, and a 1.5px line in
+     it reads as disabled. A mid PURE gray reads as ink —
+     quiet enough to stay out of the interactive budget (原则 1),
+     dark enough to look drawn on purpose. A micro-chart stays on
+     data-line unless the line itself is the emphasis; then it takes
+     a --th-chart-* slot, never a status or brand color. */
+  --color-data-line:  oklch(0.55 0 0);
+  --color-data-fill:  color-mix(in srgb, var(--color-data-line) 14%, transparent);
+  --color-data-track: var(--color-surface-inset);
+
+  /* ── Stacked-composition ramp ───────────────────────────
+     Parts of ONE quantity: a token split (input/output/reasoning),
+     a cost split inside one bar, a donut, a segmented meter.
+     The categorical chart ring is the WRONG tool here — hand-picking
+     chart-1/3/5 yields an unrelated indigo + violet + green that
+     reads as three separate metrics, and chart-1 (L .56) is the
+     darkest value in the ring, so an 8px bar came out heavy and
+     dull. This is one continuous cool arc (hue 218→168) with
+     stepped lightness: the segments read as "one total, cut up",
+     they sit clearly lighter and airier than the categorical ring,
+     and the arc is far enough from the brand hue (264) to stay out
+     of the interactive budget (原则 1).
+     Order segments by billing weight, most expensive first, so the
+     ramp darkens in the direction of "costs more".
+     stack-0 is the neutral residual bucket — cached, unbilled,
+     「其他」— deliberately the lightest, because it is the part you
+     are NOT paying for. Four segments + residual is the ceiling;
+     more than that is a chart, not a meter. */
+  --color-stack-1: oklch(0.70 0.11 218);   /* sky */
+  --color-stack-2: oklch(0.66 0.11 200);   /* cyan */
+  --color-stack-3: oklch(0.62 0.10 184);   /* teal */
+  --color-stack-4: oklch(0.57 0.09 168);   /* deep teal */
+  --color-stack-0: oklch(0.80 0 0);        /* neutral residual */
+}
+
+/* ── Compact density ─────────────────────────────
+   Put data-density="compact" on <html>, a page shell, or a single
+   card. Only geometry tightens — font sizes never shrink, so text
+   stays at the 12px floor and the page just holds ~25% more rows.
+   Use for list/table/log pages where comparison beats comfort. */
+[data-density="compact"] {
+  --th-row-h:     32px;
+  --th-row-pad-y:  6px;
+  --th-ctl-h-sm:  24px;
+  --th-ctl-h:     26px;
+  --th-ctl-h-lg:  28px;
+  --th-card-pad:  12px;
+  --th-stack-gap:  8px;
+  --th-field-gap:  8px;
+  --th-block-gap: 8px;
+}
+
+/* ── Dark theme ─────────────────────────────────────────────
+   Toggle via document.documentElement.setAttribute('data-theme','dark')
+   (or add data-theme="dark" to any container — it scopes to descendants).
+   Redeclares the same primitive + semantic tokens components already
+   consume (--th-white, --th-bg, --th-gray-*, --color-*), so every
+   component restyles automatically — no component code changes needed. */
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --th-white:    #1C1C1C;   /* card surface */
+  --th-bg:       #131313;   /* canvas + navigation surface */
+  --th-gray-50:  #292929;   /* card border, divider */
+  --th-gray-100: #333333;   /* nav border, hairline */
+  --th-gray-150: #3A3A3A;
+  --th-gray-200: #404040;
+  --th-gray-250: #545454;
+  --th-gray-300: #858585;   /* subtle text */
+  --th-gray-400: #949494;
+  --th-gray-500: #A4A4A4;   /* muted text */
+  --th-gray-600: #BFBFBF;
+  --th-gray-700: #D6D6D6;
+  --th-gray-800: #EBEBEB;
+  --th-gray-900: #F4F4F4;   /* primary text — near-white, never pure #FFF */
+
+  --th-teal-50:  color-mix(in srgb, var(--brand-500) 16%, transparent);   /* active-state tints on dark surfaces */
+  --th-teal-100: color-mix(in srgb, var(--brand-500) 26%, transparent);
+  --th-teal-600: color-mix(in srgb, var(--brand-400) 72%, white);   /* brightened — text/icon ON tint */
+  --th-teal-700: color-mix(in srgb, var(--brand-400) 55%, white);   /* brightened — text ON tint */
+  --th-pink-50:  rgba(245,108,137,0.16);
+  --th-pink-500: #FF93AB;   /* brightened — decorative on dark */
+  --th-pink-600: #FF9DB2;   /* brightened — TEXT on pink-50 tint (dark surfaces need light text) */
+  --th-blue-500: #7C90FF;   /* brightened link for contrast on dark */
+
+  --color-link: var(--th-teal-600);
+  --color-row-hover: #202020;
+  --color-cta:       var(--brand-400);   /* dark: lighter fill + near-black label = 7:1 (white label on a brand fill would be 3.6:1) */
+  --color-cta-fg:    #0F1115;
+  --color-surface-quiet: #1F1F1F;
+  --color-surface-inset: #232323;
+  --color-surface-well: #2A2A2A;
+  --color-surface-quiet-border: var(--th-gray-100);
+  --color-table-total: var(--color-surface-well);
+
+  /* Category tones — tint on dark surfaces, lightened label */
+  --th-cat-1-bg: color-mix(in srgb, var(--th-chart-1) 18%, transparent);
+  --th-cat-1-fg: color-mix(in srgb, var(--th-chart-1) 70%, white);
+  --th-cat-2-bg: color-mix(in srgb, var(--th-chart-2) 18%, transparent);
+  --th-cat-2-fg: color-mix(in srgb, var(--th-chart-2) 70%, white);
+  --th-cat-3-bg: color-mix(in srgb, var(--th-chart-3) 18%, transparent);
+  --th-cat-3-fg: color-mix(in srgb, var(--th-chart-3) 70%, white);
+  --th-cat-4-bg: color-mix(in srgb, var(--th-chart-4) 18%, transparent);
+  --th-cat-4-fg: color-mix(in srgb, var(--th-chart-4) 70%, white);
+  --th-cat-5-bg: color-mix(in srgb, var(--th-chart-5) 18%, transparent);
+  --th-cat-5-fg: color-mix(in srgb, var(--th-chart-5) 70%, white);
+  --th-cat-6-bg: color-mix(in srgb, var(--th-chart-6) 18%, transparent);
+  --th-cat-6-fg: color-mix(in srgb, var(--th-chart-6) 70%, white);
+
+  /* Heat ramp — same brand hue, mixed into the dark surface */
+  --th-heat-0: var(--th-gray-50);
+  --th-heat-1: color-mix(in srgb, var(--brand-500) 18%, var(--th-white));
+  --th-heat-2: color-mix(in srgb, var(--brand-500) 32%, var(--th-white));
+  --th-heat-3: color-mix(in srgb, var(--brand-500) 50%, var(--th-white));
+  --th-heat-4: color-mix(in srgb, var(--brand-500) 70%, var(--th-white));
+  --th-ring: 0 0 0 3px color-mix(in srgb, var(--th-teal-600) 28%, transparent); /* @kind other */
+
+  --th-shadow-card:  none;
+  --th-shadow-soft:  0 2px 4px rgba(0,0,0,0.20), 0 6px 14px rgba(0,0,0,0.26);
+  --th-shadow-modal: 0 3px 8px rgba(0,0,0,0.26), 0 12px 28px rgba(0,0,0,0.34);
+  --th-shadow-key:   none;
+
+  --color-success-bg: rgba(0,214,122,0.16);
+  --color-success-fg: #3DDC97;
+  --color-warning-bg: rgba(217,159,61,0.20);
+  --color-warning-fg: #F0C674;
+  --color-danger-bg:  var(--th-pink-50);
+  --color-danger-fg:  var(--th-pink-600);
+  --color-info-bg:    var(--th-teal-50);
+  --color-info-fg:    var(--th-teal-600);
+  --color-success-solid: oklch(0.74 0.15 158);
+  --color-warning-solid: oklch(0.80 0.14 78);
+  --color-danger-solid:  oklch(0.68 0.17 18);
+  --color-info-solid:    var(--brand-400);
+
+  --color-data-line:  oklch(0.70 0 0);
+  --color-data-fill:  color-mix(in srgb, var(--color-data-line) 18%, transparent);
+  --color-data-track: var(--color-surface-inset);
+
+  /* Stacked-composition ramp — same arc, lifted for dark surfaces */
+  --color-stack-1: oklch(0.78 0.11 218);
+  --color-stack-2: oklch(0.74 0.11 200);
+  --color-stack-3: oklch(0.70 0.10 184);
+  --color-stack-4: oklch(0.65 0.09 168);
+  --color-stack-0: oklch(0.52 0 0);
+
+  /* Chart palette — same hue ring, lifted ~+0.12 L for dark surfaces */
+  --th-chart-1:  oklch(0.68 0.13 268);
+  --th-chart-2:  oklch(0.76 0.11 178);
+  --th-chart-3:  oklch(0.73 0.14 300);
+  --th-chart-4:  oklch(0.82 0.12 78);
+  --th-chart-5:  oklch(0.76 0.13 148);
+  --th-chart-6:  oklch(0.72 0.14 14);
+  --th-chart-7:  oklch(0.78 0.10 220);
+  --th-chart-8:  oklch(0.70 0.15 338);
+  --th-chart-9:  oklch(0.78 0.11 112);
+  --th-chart-10: oklch(0.72 0.12 46);
+  --th-chart-11: oklch(0.70 0.06 252);
+  --th-chart-12: oklch(0.76 0 0);
+}
+
+
+/* ── Element-level defaults ────────────────────────────────── */
+html, body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font-family: var(--th-font-cn);
+  font-size: var(--th-text-base);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1 { font-family: var(--th-font-cn); font-weight: 700; font-size: var(--th-text-hero); line-height: 1; letter-spacing: -0.01em; margin: 0; }
+h2 { font-family: var(--th-font-cn); font-weight: 700; font-size: var(--th-text-2xl); line-height: 1.15; margin: 0; }
+h3 { font-family: var(--th-font-cn); font-weight: 600; font-size: var(--th-text-xl); line-height: 1.2; margin: 0; }
+h4 { font-family: var(--th-font-cn); font-weight: 500; font-size: var(--th-text-md); line-height: 1.3; margin: 0; }
+p  { margin: 0; font-size: var(--th-text-base); color: var(--color-fg); }
+small, .caption { font-size: var(--th-text-xs); color: var(--color-fg-muted); }
+code, pre { font-family: var(--th-font-mono); font-size: var(--th-text-sm); font-variant-numeric: tabular-nums; }
+/* Any figure that can change or be compared column-wise — money, counts,
+   token totals, timestamps, percentages — gets tabular numerals so digits
+   never shift width between renders. */
+.th-nums { font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1; }
+a  { color: var(--color-link); text-decoration: none; }
+a:hover { opacity: 0.85; }
+:focus-visible { outline: 2px solid var(--th-teal-500); outline-offset: 2px; }

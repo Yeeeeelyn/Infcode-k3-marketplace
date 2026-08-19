@@ -1,0 +1,25 @@
+/* styles.css — single entry point for the TokenHub Design System.
+   Consumers link only this file: it pulls in tokens, fonts, and the
+   Remix Icon font used throughout every kit. */
+@import url("./colors_and_type.css");
+@import url("./motion.css");
+@import url("https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css");
+
+* { box-sizing: border-box; }
+
+/* ── Control-label integrity (system-wide, non-negotiable) ──────────────
+   A control with a FIXED height (every button, tab, segment, chip, pill,
+   step and pager cell in this system) must never let its label wrap: the
+   second line escapes the fixed-height background and the control looks
+   broken. These are the floor for every component and every consuming
+   page — a component may still opt out with an inline style when it is
+   genuinely a multi-line surface (a card, a menu item with a description).
+     • white-space: nowrap  — label stays on one line
+     • flex-shrink: 0       — a crowded toolbar row overflows/scrolls
+                              instead of squeezing the button until the
+                              label collides with its own padding
+   Corollary rules live in SKILL.md → 控件标签（强制）: never give a button
+   a fixed px width, keep labels ≤ 6 汉字 / ~14 latin chars, and put a
+   long label in a Tooltip instead of in the button. */
+button, [role="button"], [role="tab"], [role="option"], .tk-btn { white-space: nowrap; }
+button, .tk-btn { flex-shrink: 0; }

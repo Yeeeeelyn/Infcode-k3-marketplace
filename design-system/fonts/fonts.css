@@ -1,0 +1,16 @@
+/*
+ * InfOne fonts.
+ *
+ * UI text (Chinese, numbers, Latin) uses NO webfont — the font-family stack in
+ * `colors_and_type.css` resolves whatever the device already ships:
+ *   Apple  → PingFang SC (via -apple-system / BlinkMacSystemFont)
+ *   Windows→ Microsoft YaHei (微软雅黑)
+ *   Android→ the bundled sans (HarmonyOS Sans SC / Noto Sans CJK SC / Roboto)
+ * No CJK webfont is downloaded: zero FOUT, zero licensing exposure, and every
+ * platform gets its own natively hinted family.
+ *
+ * Sora — wordmark only (Sora 700, next to the logo).
+ * IBM Plex Mono — code blocks, API URLs, key strings.
+ */
+@import url("https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap");
