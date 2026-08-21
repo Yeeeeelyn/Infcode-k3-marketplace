@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marketplace · 交互式 PRD</title>
+<link rel="stylesheet" href="design-system/colors_and_type.css">
+<link rel="stylesheet" href="design-system/motion.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css">
+<style>
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--th-bg);color:var(--color-fg);font-family:var(--th-font-cn);font-size:13px}
+.mono{font-family:var(--th-font-mono);font-size:var(--th-text-xs)}
+
+/* ================= 布局 ================= */
+.topbar{position:sticky;top:0;z-index:var(--z-nav);height:48px;display:flex;align-items:center;gap:14px;
+  padding:0 20px;background:color-mix(in srgb, var(--color-surface-nav) 88%, transparent);
+  backdrop-filter:blur(50px);border-bottom:0.5px solid var(--color-divider)}
+.tb-tile{width:24px;height:24px;border-radius:var(--th-radius-md);background:var(--brand-50);color:var(--brand-600);
+  display:inline-flex;align-items:center;justify-content:center;font-size:14px}
+.tb-title{font-family:var(--th-font-brand);font-weight:700;font-size:15px;letter-spacing:-.01em}
+.tb-sub{font-size:11px;color:var(--color-fg-muted)}
+.tb-right{margin-left:auto;display:flex;gap:8px;align-items:center}
+.tb-link{display:inline-flex;align-items:center;gap:5px;height:28px;padding:0 12px;border-radius:var(--th-radius-pill);
+  font-size:12px;color:var(--color-fg);text-decoration:none;background:var(--color-surface-quiet);cursor:pointer;border:none}
+.tb-link:hover{background:var(--color-surface-inset)}
+.tb-link i{font-size:13px}
+
+.layout{display:grid;grid-template-columns:230px minmax(0,1fr);gap:16px;max-width:1600px;margin:0 auto;padding:16px 24px 64px;align-items:start}
+.snav{position:sticky;top:64px;padding:6px;background:var(--color-surface-raised);border:var(--th-border-card);border-radius:var(--th-radius-md)}
+.snav .sn-title{font-size:11px;color:var(--color-fg-subtle);font-weight:600;letter-spacing:.5px;padding:8px 10px 4px}
+.snav button{display:flex;align-items:center;gap:8px;width:100%;height:32px;padding:0 10px;border:none;background:none;
+  border-radius:var(--th-radius-xs);font-size:13px;font-family:var(--th-font-cn);color:var(--color-fg);cursor:pointer;text-align:left}
+.snav button i{font-size:14px;color:var(--color-fg-muted)}
+.snav button:hover{background:var(--color-row-hover)}
+.snav button.active{background:var(--color-accent-soft);color:var(--th-teal-600);font-weight:600}
+.snav button.active i{color:var(--th-teal-600)}
+.snav button .bdg{margin-left:auto;font-size:10px;min-width:16px;height:16px;padding:0 5px;border-radius:999px;
+  background:var(--brand-50);color:var(--brand-600);display:inline-flex;align-items:center;justify-content:center;font-weight:600}
+
+/* ================= 文档排版 ================= */
+.doc{display:flex;flex-direction:column;gap:16px;min-width:0}
+.card{background:var(--color-surface-raised);border:var(--th-border-card);border-radius:var(--th-radius-md)}
+.doc-sec{padding:20px 24px}
+.doc-sec h2{font-size:var(--th-text-lg);font-weight:700;margin:0 0 4px;letter-spacing:-.01em;display:flex;align-items:center;gap:10px}
+.doc-sec h2 .ref{font-size:11px;font-weight:500;color:var(--brand-600);background:var(--brand-50);border-radius:var(--th-radius-xs);padding:2px 8px}
+.doc-sec .lead{color:var(--color-fg-muted);font-size:13px;line-height:1.8;max-width:760px;margin:6px 0 0}
+.doc-sec p{color:var(--color-fg-muted);line-height:1.8;margin:6px 0}
+.doc-sec ul{padding-left:18px;color:var(--color-fg-muted);line-height:1.9;margin:6px 0}
+.doc-sec b{color:var(--color-fg);font-weight:600}
+.doc-sec code{background:var(--th-gray-50);border-radius:var(--th-radius-xs);padding:1px 5px;font-family:var(--th-font-mono);font-size:12px;color:var(--th-gray-800)}
+.tbl{width:100%;border-collapse:collapse;margin-top:10px}
+.tbl th{text-align:left;padding:8px 12px;font-size:12px;font-weight:500;color:var(--color-fg-muted);border-bottom:0.5px solid var(--color-border);white-space:nowrap}
+.tbl td{padding:8px 12px;border-top:0.5px solid var(--color-border);font-size:13px;vertical-align:top;line-height:1.7;color:var(--color-fg)}
+.tbl td.muted{color:var(--color-fg-muted)}
+.tbl-wrap{overflow-x:auto}
+
+.tag{display:inline-flex;align-items:center;gap:5px;height:24px;padding:0 8px;border-radius:var(--th-radius-xs);font-size:var(--th-text-xs);white-space:nowrap;flex-shrink:0}
+.tag i{font-size:12px}
+.tag.t-neutral{background:var(--th-gray-50);color:var(--th-gray-600)}
+.tag.t-teal{background:var(--th-teal-50);color:var(--th-teal-600)}
+.tag.t-pink{background:var(--th-pink-50);color:var(--th-pink-600)}
+.tag.t-warn{background:var(--color-warning-bg);color:var(--color-warning-fg)}
+.tag.t-dark{background:var(--th-gray-50);color:var(--th-gray-800)}
+.chip{display:inline-flex;align-items:center;gap:4px;height:22px;padding:0 10px;border-radius:999px;font-size:11px;font-weight:500;white-space:nowrap;flex-shrink:0}
+.chip i{font-size:12px}
+.chip.c-success{background:var(--color-success-bg);color:var(--color-success-fg)}
+.chip.c-warning{background:var(--color-warning-bg);color:var(--color-warning-fg)}
+.chip.c-danger{background:var(--color-danger-bg);color:var(--color-danger-fg)}
+.chip.c-info{background:var(--color-info-bg);color:var(--color-info-fg)}
+.chip.c-neutral{background:var(--th-gray-50);color:var(--color-fg-muted)}
+
+.chain{display:flex;align-items:center;gap:0;flex-wrap:wrap;margin:14px 0}
+.chain .cn{padding:8px 14px;border-radius:var(--th-radius-sm);background:var(--color-surface-quiet);border:1px solid var(--color-border);
+  font-weight:600;font-size:13px;display:flex;flex-direction:column;gap:2px}
+.chain .cn small{font-weight:400;font-size:11px;color:var(--color-fg-muted)}
+.chain .cn.hl{background:var(--brand-50);border-color:color-mix(in srgb,var(--brand-500) 35%,transparent);color:var(--brand-600)}
+.chain .arr{color:var(--color-fg-subtle);font-size:16px;padding:0 6px}
+.sm-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:8px 0}
+.sm-node{padding:4px 12px;border-radius:999px;font-size:12px;font-weight:500;background:var(--th-gray-50);color:var(--th-gray-800);border:1px solid transparent}
+.sm-node.key{background:var(--color-success-bg);color:var(--color-success-fg)}
+.sm-node.warn{background:var(--color-warning-bg);color:var(--color-warning-fg)}
+.sm-node.err{background:var(--color-danger-bg);color:var(--color-danger-fg)}
+.sm-node.brand{background:var(--brand-50);color:var(--brand-600)}
+.sm-arr{color:var(--color-fg-subtle);font-size:12px}
+.sm-note{font-size:11px;color:var(--color-fg-subtle);margin-left:4px}
+
+/* ================= 链路模拟器（真实原型驱动） ================= */
+.flow-head{display:flex;flex-direction:column;gap:12px}
+.flow-chips{display:flex;gap:8px;flex-wrap:wrap}
+.fchip{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 14px;border-radius:var(--th-radius-pill);
+  border:1px solid var(--color-border);background:var(--color-surface-raised);font-size:12px;cursor:pointer;font-family:var(--th-font-cn);color:var(--color-fg)}
+.fchip i{font-size:14px;color:var(--color-fg-muted)}
+.fchip:hover{border-color:var(--brand-400)}
+.fchip.on{border-color:var(--brand-500);background:var(--brand-50);color:var(--brand-600);font-weight:600}
+.fchip.on i{color:var(--brand-600)}
+.flow-meta{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--color-fg-muted);flex-wrap:wrap}
+
+.stepper{display:flex;align-items:flex-start;gap:0;margin:6px 0 2px;overflow-x:auto;padding-bottom:4px}
+.step{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:110px;flex:1;cursor:pointer;position:relative}
+.step .s-dot{width:26px;height:26px;border-radius:999px;background:var(--th-gray-50);color:var(--color-fg-subtle);
+  display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;z-index:1;transition:all var(--th-dur-2) var(--th-ease)}
+.step .s-label{font-size:11px;color:var(--color-fg-muted);text-align:center;line-height:1.4;max-width:120px}
+.step .s-route{font-size:10px;color:var(--color-fg-subtle);font-family:var(--th-font-mono)}
+.step::before{content:"";position:absolute;top:13px;left:-50%;width:100%;height:2px;background:var(--th-gray-100)}
+.step:first-child::before{display:none}
+.step.done .s-dot{background:var(--th-teal-50);color:var(--th-teal-600)}
+.step.done::before{background:var(--th-teal-500)}
+.step.now .s-dot{background:var(--brand-500);color:#fff;box-shadow:0 0 0 4px var(--brand-50)}
+.step.now .s-label{color:var(--color-fg);font-weight:600}
+
+.sim{display:grid;grid-template-columns:340px minmax(0,1fr);gap:12px;align-items:start}
+/* 指引面板 */
+.guide{padding:0;display:flex;flex-direction:column;overflow:hidden;position:sticky;top:64px;max-height:calc(100vh - 90px)}
+.guide .g-head{padding:12px 14px;border-bottom:0.5px solid var(--color-border);display:flex;align-items:center;gap:8px;background:var(--color-surface-quiet)}
+.guide .g-head b{font-size:13px}
+.guide .g-head .g-step{margin-left:auto;font-size:11px;color:var(--color-fg-subtle);white-space:nowrap}
+.guide .g-body{padding:14px;overflow-y:auto;display:flex;flex-direction:column;gap:12px;font-size:13px}
+.g-intro{color:var(--color-fg-muted);line-height:1.8;font-size:12px}
+.g-item{border:1px solid var(--color-border);border-radius:var(--th-radius-sm);padding:10px 12px;cursor:pointer;transition:border-color var(--th-dur-1) var(--th-ease)}
+.g-item:hover{border-color:var(--brand-400)}
+.g-item.on{border-color:var(--brand-500);box-shadow:var(--th-ring)}
+.g-item .gi-head{display:flex;align-items:center;gap:8px;font-weight:600;font-size:13px}
+.g-item .gi-head .n{width:18px;height:18px;border-radius:999px;background:var(--brand-500);color:#fff;font-size:10px;
+  display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:700}
+.g-item .gi-head .n.t{background:var(--th-teal-500)}
+.g-item .gi-ref{margin-left:auto;font-size:10px;color:var(--brand-600);background:var(--brand-50);padding:2px 6px;border-radius:var(--th-radius-xs);white-space:nowrap}
+.g-item .gi-body{font-size:12px;color:var(--color-fg-muted);line-height:1.8;margin-top:8px}
+.g-item .gi-body ul{padding-left:16px;margin:4px 0}
+.g-item .gi-body li{margin:3px 0}
+.g-item .gi-edge{margin-top:8px;padding:8px 10px;border-radius:var(--th-radius-xs);background:var(--color-warning-bg);color:var(--color-warning-fg);font-size:11px;line-height:1.7}
+.g-item .gi-edge b{display:block;margin-bottom:2px}
+.g-adv{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 14px;margin-top:10px;border-radius:var(--th-radius-pill);
+  border:none;background:var(--th-teal-500);color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--th-font-cn)}
+.g-adv:hover{background:var(--th-teal-600)}
+.g-adv:disabled{opacity:.5;cursor:wait}
+.g-adv i{font-size:13px}
+.sim-nav{display:flex;gap:8px;justify-content:space-between;align-items:center;padding:10px 2px 0}
+.btn{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 16px;font-size:13px;font-weight:500;font-family:var(--th-font-cn);
+  border-radius:var(--th-radius-pill);border:1px solid transparent;cursor:pointer;user-select:none;white-space:nowrap;line-height:1}
+.btn.primary{background:var(--color-cta);color:var(--color-cta-fg)}
+.btn.primary:hover:not(:disabled){background:color-mix(in srgb, var(--color-cta) 88%, black)}
+.btn.secondary{background:var(--color-surface-quiet);color:var(--color-fg)}
+.btn.secondary:hover:not(:disabled){background:var(--color-surface-inset)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.sm{height:28px;padding:0 12px;font-size:12px}
+.btn i{font-size:14px}
+
+/* 原型舞台 */
+.stage-col{display:flex;flex-direction:column;gap:10px;min-width:0}
+.stage-bar{display:flex;align-items:center;gap:10px;padding:8px 12px}
+.stage-bar .sb-route{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--color-fg-muted)}
+.stage-bar .sb-route .dot{width:8px;height:8px;border-radius:999px;background:var(--color-success-fg)}
+.stage-bar .sb-right{margin-left:auto;display:flex;gap:8px;align-items:center}
+.legend{display:flex;gap:14px;font-size:11px;color:var(--color-fg-muted);align-items:center;padding:0 12px 10px;flex-wrap:wrap}
+.legend .lg{display:inline-flex;align-items:center;gap:5px}
+.legend .dot{width:14px;height:14px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;font-size:9px;color:#fff;font-weight:700}
+.legend .dot.b{background:var(--brand-500)}
+.legend .dot.t{background:var(--th-teal-500)}
+
+.frame-wrap{position:relative;border:var(--th-border-card);border-radius:var(--th-radius-md);overflow:hidden;background:#fff;height:calc(100vh - 320px);min-height:520px}
+.frame-wrap iframe{width:100%;height:100%;border:0;display:block}
+.pin-layer{position:absolute;inset:0;pointer-events:none;z-index:10}
+.pin{position:absolute;width:22px;height:22px;border-radius:999px;background:var(--brand-500);color:#fff;border:2px solid #fff;
+  display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;cursor:pointer;
+  box-shadow:0 1px 6px rgba(0,0,0,.3);transform:translate(-50%,-50%);transition:transform var(--th-dur-1) var(--th-ease),opacity var(--th-dur-1) var(--th-ease);pointer-events:auto}
+.pin:hover{transform:translate(-50%,-50%) scale(1.18)}
+.pin::after{content:"";position:absolute;inset:-6px;border-radius:999px;border:2px solid var(--brand-500);opacity:.35;animation:pin-pulse 2s ease-out infinite}
+.pin.sel{background:var(--th-gray-900);transform:translate(-50%,-50%) scale(1.12)}
+.pin.sel::after{display:none}
+.pin.go{background:var(--th-teal-500)}
+.pin.go::after{border-color:var(--th-teal-500)}
+.pin.hidden{opacity:0;pointer-events:none}
+@keyframes pin-pulse{0%{transform:scale(.6);opacity:.5}70%{transform:scale(1.15);opacity:0}100%{opacity:0}}
+.frame-loading{position:absolute;inset:0;display:flex;flex-direction:column;gap:10px;align-items:center;justify-content:center;
+  background:var(--th-bg);color:var(--color-fg-muted);font-size:12px;z-index:5}
+.frame-loading i{font-size:22px;color:var(--brand-500);animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.frame-err{position:absolute;inset:0;display:none;flex-direction:column;gap:8px;align-items:center;justify-content:center;
+  background:var(--th-bg);color:var(--color-fg-muted);font-size:12px;z-index:6;text-align:center;padding:20px;line-height:1.8}
+
+.flow-done{padding:40px 24px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center}
+.flow-done .fd-icon{width:48px;height:48px;border-radius:999px;background:var(--th-teal-50);color:var(--th-teal-600);display:inline-flex;align-items:center;justify-content:center;font-size:22px}
+.flow-done b{font-size:14px}
+.flow-done p{font-size:12px;color:var(--color-fg-muted);max-width:460px;line-height:1.8;margin:0}
+
+@media(max-width:1080px){
+  .layout{grid-template-columns:1fr}
+  .snav{position:static;display:flex;flex-wrap:wrap}
+  .sim{grid-template-columns:1fr}
+  .guide{position:static;max-height:none;order:2}
+  .frame-wrap{height:70vh}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <span class="tb-tile"><i class="ri-file-list-3-line"></i></span>
+  <span class="tb-title">Marketplace · 交互式 PRD</span>
+  <span class="tb-sub">在高保真原型上标注的链路指引</span>
+  <div class="tb-right">
+    <a class="tb-link" href="marketplace.html" target="_blank"><i class="ri-window-line"></i>打开高保真原型</a>
+    <a class="tb-link" href="PRD｜Marketplace.md" target="_blank"><i class="ri-file-text-line"></i>PRD 原文</a>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="snav" id="snav"></nav>
+  <main class="doc" id="doc"></main>
+</div>
+
+<script>
+/* ======================================================================
+ * 交互式 PRD：直接驱动高保真原型 marketplace.html（iframe 同源）
+ * 热点标注真实 DOM 元素；青色热点在原型中真实执行动作
+ * ==================================================================== */
+const $=s=>document.querySelector(s);
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+async function until(cond,timeout=6000,step=150){const t0=Date.now();while(Date.now()-t0<timeout){try{if(cond())return true}catch(e){}await sleep(step)}return false}
+
+/* ---------------- 原型 Frame 操作 ---------------- */
+const FW={
+  el:null,
+  doc(){try{return this.el&&this.el.contentDocument}catch(e){return null}},
+  hash(){try{return this.el.contentWindow.location.hash||'#/market'}catch(e){return ''}},
+  nav(route){try{const w=this.el.contentWindow;if(!w)return;
+    if(w.location.hash===route){return}
+    w.location.hash=route}catch(e){}},
+  find(sel,text){const d=this.doc();if(!d)return null;const els=[...d.querySelectorAll(sel)];
+    if(!text)return els[0]||null;return els.find(e=>e.textContent.includes(text))||null},
+  click(sel,text){const el=this.find(sel,text);if(el){el.click();return true}return false},
+  reload(){try{this.el.contentWindow.location.href='marketplace.html#/market';this.el.contentWindow.location.reload()}catch(e){this.el.src='marketplace.html#/market'}},
+};
+async function runOps(ops){for(const op of ops||[]){
+  if(op.hash)FW.nav(op.hash);
+  else if(op.click)FW.click(op.click,op.text);
+  else if(op.wait)await sleep(op.wait);
+  if(op.thenWait)await sleep(op.thenWait);else if(!op.wait)await sleep(120);
+}}
+
+/* ---------------- 链路数据（选择器指向真实原型 DOM） ---------------- */
+const FLOWS=[
+{id:'A',icon:'ri-compass-3-line',name:'发现与安装闭环',roles:'普通成员',ref:'§7 · §8 · §12.1',
+ desc:'成员在市场找到内容 → 详情页看清风险 → 点安装 → IDE 接手完成真正的安装。',
+ steps:[
+  {title:'市场首页 · 发现',route:'#/market',
+   intro:'市场首页负责「找内容」：按类型浏览、搜索、按来源 / 签发方 / 安装策略筛选。搜索和筛选条件会同步进网址，可分享、返回后不丢失。',
+   spots:[
+    {sel:'#market-q',title:'搜索框',ref:'PRD §7.3',
+     body:['输入关键词后稍等片刻（250ms）自动搜索，关键词同步进网址。','从详情页返回市场时，搜索词、筛选和滚动位置都恢复成离开时的样子。'],
+     edge:'没有结果时给出空状态和「清空搜索与筛选」入口，不会一直转圈加载。'},
+    {sel:'.tabs',corner:'tl',title:'类型目录',ref:'PRD §7.1',
+     body:['五种内容（Skill / Plugin / Rule / Prompt / Template）在同一个市场里，用 Tab 切换。','Tab 上的数量会跟着搜索和筛选条件实时变化。']},
+    {sel:'.filter-group[data-fg="source"] > button',title:'筛选组',ref:'PRD §7.3',
+     body:['可按来源生态、签发方、安装策略多选组合筛选，选中项同样同步进网址。','来源生态（企业官方 / InfCode / Claude / 第三方）是判断内容可信度的第一层标识。']},
+    {sel:'.card-grid .m-card',title:'内容卡片',ref:'PRD §7.4',
+     body:['卡片底部只会出现三种状态之一：「不兼容」、「已安装（含装到了哪里）」、「去安装」按钮。','「已安装」来自 IDE 同步回来的真实安装状态，网页自己不记第二份。','收藏 ≠ 安装：点星标只是收藏，不会触发任何安装动作。']},
+    {sel:'.card-grid .m-card h3',go:true,title:'卡片标题 → 进入详情',ref:'PRD §8.1',
+     body:['点标题进入详情页——安装前先把风险看清楚。','从详情页返回时，市场的搜索和筛选原样保留。'],
+     action:[{click:'.card-grid .m-card h3'}],
+     nextLabel:'进入「需求转测试用例」详情页 →'},
+   ]},
+  {title:'内容详情 · 风险预检',route:'#/detail/c-req2test',
+   intro:'详情页用来回答一个问题：「这东西能不能放心装？」权限、扫描、审核这些信任信息即使为空也会明确写出来，绝不悄悄隐藏。',
+   spots:[
+    {sel:'.d-actions .btn[data-action="install"]',go:true,title:'主按钮「在 InfCode 中安装」',ref:'PRD §8.2',
+     body:['没装过且能装的内容，主按钮固定是「在 InfCode 中安装」。','点击后网页只生成一张「安装意向单」（InstallIntent，10 分钟有效、带防重复钥匙），真正的安装由 IDE 完成。','在 IDE 确认接手之前，网页不会假装已经安装了任何东西。'],
+     edge:'如果唤起 IDE 失败或意向单过期，页面不会显示「安装成功」；可以重试唤起，或复制操作信息手动处理。',
+     action:[{click:'.d-actions .btn[data-action="install"]'}],
+     nextLabel:'发起安装（生成安装意向单）→'},
+    {sel:'.d-side .card:nth-of-type(1)',title:'安全与权限',ref:'PRD §8.1',
+     body:['每条权限都写清楚：要什么、风险多高、用来做什么。','扫描和审核结果如实展示；没有权限需求时会明确写「已验证无额外权限」，而不是整块消失。']},
+    {sel:'.d-side .card:nth-of-type(3)',title:'审计信息',ref:'PRD §8.1',
+     body:['展示这份内容的「身份证」：内容指纹（checksum）、谁审的、什么时候发的、来源锁定。','完整审计记录有权限控制，不是所有人都能看全。']},
+    {sel:'.d-meta',title:'安装策略标签',ref:'PRD §11.1',
+     body:['三种策略：可选安装（自己主动装）、默认下发（组织装好但可卸）、组织强制（必须装且不能动）。','组织强制的内容在这里就会标明「由组织管理」。']},
+    {sel:'.d-side .card:nth-of-type(4)',title:'企业使用数据',ref:'PRD §8.1 · §13.1',
+     body:['安装量、收藏、月活、执行次数，按你有权看到的范围统计。','口径和个人中心「数据概览」完全一致，出自同一份数据。']},
+   ]},
+  {title:'安装交接 · 意向单',route:'#/detail/c-req2test',
+   enter:[{click:'.d-actions .btn[data-action="install"]'}],
+   ready:['.vsteps','[data-action="confirm-install"]'],
+   intro:'这是网页把安装「交接」给 IDE 的弹窗：能看清进度走到哪一步、装到哪个环境。意向单 10 分钟有效，重复点击不会重复安装。（弹窗约 1 秒后出现目标选择和确认按钮）',
+   spots:[
+    {sel:'.vsteps',title:'交接进度步骤条',ref:'PRD §8.2',
+     body:['意向单的生命周期：已生成 → 已唤起 IDE → IDE 已确认；中途也可能过期或失败。','IDE 确认时会带回一个安装记录编号；拿到之前，网页只显示「等待 IDE 确认」。','没过期前重试用的是同一把防重复钥匙，不会产生重复安装。']},
+    {sel:'.target-opt[data-id="p1"]',title:'装到哪个环境',ref:'PRD §12.1 · §11.5',
+     body:['自己主动安装时，可选装到「我的环境（User）」或某个具体项目（Project）。','如果选的项目不存在、已关闭或没权限，必须重新选择——系统不会偷偷帮你降级装到 User。','注意区分两个概念：「谁能看见它」（分发范围）和「装到哪儿」（安装目标），互不相同。']},
+    {sel:'[data-action="confirm-install"]',go:true,title:'确认安装',ref:'PRD §12.1',
+     body:['点确认后，IDE 会再检查一遍：登录身份、你能否看到它、组织策略、客户端版本和目标环境兼容性。','全部通过才创建唯一一条安装记录，然后开始下载安装。','同一个内容在同一个环境里永远只有一条安装记录，不会重复。'],
+     action:[{click:'[data-action="confirm-install"]'}],
+     nextLabel:'确认安装（IDE 校验并开始安装）→'},
+   ]},
+  {title:'安装完成 · 去使用',route:null,
+   readyAny:['.modal [data-action="use"]','.modal [data-action="ide-config"]'],
+   readyTimeout:9000,
+   intro:'安装收尾（原型用约 3 秒模拟下载安装）：IDE 确认后带回安装记录编号，状态走到「已可用」。如果内容还要连接外部系统，会停在「待配置」，走链路 B。',
+   spots:[
+    {sel:'.vsteps',title:'步骤条全部完成',ref:'PRD §8.2',
+     body:['下载 → 校验内容指纹 → 落盘 → 默认启用，全部发生在同一条安装记录上。','之后详情页主按钮变成「去使用」，市场卡片变成「已安装」。']},
+    {sel:'.modal .m-body .banner',title:'安装结果',ref:'PRD §12.2',
+     body:['「已可用」表示装好了、运行时也刷新成功。','安装成功、默认启用都会留下审计记录。']},
+    {sel:'.modal [data-action="use"]',title:'「去使用」',ref:'PRD §8.3',
+     body:['只是帮你打开 InfCode 会话并预填一条可以修改的指令——不会自动发送、不会自动执行。','指令内容可以改，你确认后才真正运行。']},
+   ]},
+ ]},
+{id:'B',icon:'ri-settings-3-line',name:'待配置收尾',roles:'普通成员',ref:'§8.3 · §12.2',
+ desc:'需要连接外部系统（如企业工单）的内容，装完会停在「待配置」；在 IDE 里完成连接配置后才真正可用。',
+ steps:[
+  {title:'详情页 · 待配置状态',route:'#/detail/c-devassist',
+   intro:'以「研发协作助手」为例（必须连接企业工单系统）：详情页主按钮随安装状态变化，此时显示「完成配置」。网页只展示状态和入口，真正的配置在 IDE 里做。',
+   spots:[
+    {sel:'.d-actions .btn',go:true,title:'主按钮「完成配置」',ref:'PRD §8.3',
+     body:['主按钮跟着安装状态走：已可用→去使用；待配置→完成配置；异常→前往 IDE 排障；已禁用→前往 IDE 启用。','网页永远不改安装状态，只会把你带到 IDE 的对应位置。'],
+     action:[{click:'.d-actions .btn'}],
+     nextLabel:'前往 IDE Market 完成配置 →'},
+    {sel:'.d-side .card:nth-of-type(2)',title:'兼容性 · 外部连接',ref:'PRD §8.1',
+     body:['这里明确写着「需要连接：企业工单 MCP」——这就是装完会停在「待配置」的原因。']},
+    {sel:'.d-actions',title:'当前状态摘要',ref:'PRD §7.4 · §12.7',
+     body:['按钮下方显示同步回来的状态：「待配置 + 装在哪里」。','状态以 IDE 回报为准，网页只读。']},
+   ]},
+  {title:'IDE Market · 完成配置',route:'#/ide/user',
+   ready:['[data-action="ide-config"]'],
+   intro:'配置只发生在 IDE：账号凭据存在连接系统里，不会回传给 Marketplace。配置完成后，同一条安装记录从「待配置」变成「已可用」。',
+   spots:[
+    {sel:'.ide-item:has([data-action="ide-config"])',title:'待配置条目',ref:'PRD §12.2',
+     body:['条目用「待配置」标出，提供「完成配置 / 取消安装」两个操作。','整个过程中安装记录只有一条，只是状态在变。']},
+    {sel:'[data-action="ide-config"]',go:true,title:'完成配置',ref:'PRD §12.2',
+     body:['点击后模拟连接校验成功：待配置 → 已可用，并默认启用。','凭据留在连接系统，不回传 Marketplace；每一步都有审计。','「取消安装」会完整卸载，不会留下装了一半的状态。'],
+     action:[{click:'[data-action="ide-config"]'}],
+     nextLabel:'完成配置（变为已可用）✓ 完成链路'},
+   ]},
+ ]},
+{id:'C',icon:'ri-upload-cloud-2-line',name:'发布与审核上架',roles:'作者 → 审核人 → 系统',ref:'§10 · §11.2',
+ desc:'作者上传内容、配好发布计划 → 提交即冻结，不可再改 → 审核人基于这份冻结快照做决定 → 通过后系统自动发布上架，作者无需再点一次「发布」。',
+ steps:[
+  {title:'创建入口',route:'#/me/local',
+   intro:'三个入口都能创建内容：顶栏「上传」下拉（智能创建 / 上传内容包）、个人中心的「在线创建 Skill」「上传内容包」。产物都是本地草稿。',
+   spots:[
+    {sel:'[data-action="create-skill"]',title:'在线创建 Skill',ref:'PRD §10.1',
+     body:['创建一份本地草稿，作者是你本人，随后进入统一的发布流程。','草稿只是你本地的内容，还没有进入市场。']},
+    {sel:'[data-action="upload-pkg"]',go:true,title:'上传内容包',ref:'PRD §10.1',
+     body:['上传符合规范的内容包（比如 Skill 最少要有一个 SKILL.md），解析成功后自动建草稿并打开发布页。','重复上传有防重机制，不会生成重复草稿。'],
+     action:[{click:'[data-action="upload-pkg"]'}],
+     nextLabel:'上传并创建草稿，进入发布页 →'},
+    {sel:'.my-list',title:'本地列表与状态',ref:'PRD §9.2',
+     body:['「本地」只放你自己创建 / 上传的内容，从市场安装的别人内容不在这里。','状态一目了然：草稿 / 审核中 / 已上架 / 未上架。']},
+   ]},
+  {title:'内容发布页 · 冻结提交',route:'#/publish/x',
+   intro:'发布页一次收齐审核需要的所有信息；其中「发布计划」会在提交那一刻和内容版本一起冻结。',
+   spots:[
+    {sel:'.publish-layout .form-block:nth-of-type(1)',title:'必需信息 · 来源声明',ref:'PRD §6.4 · §10.2',
+     body:['来源必须声明三种之一：企业原创 / 镜像外部上游（要锁定具体版本）/ 组合多来源（逐个组件给来源证据）。','计划签发方在这里选定，提交后冻结不可改。']},
+    {sel:'.publish-layout .form-block:nth-of-type(3)',title:'权限依赖',ref:'PRD §10.2',
+     body:['声明需要哪些权限：文件读写、数据源、网络等，提交时会和包内实际能力核对。','声明了必需连接的，安装后会进入待配置（见链路 B）。']},
+    {sel:'.publish-layout .form-block:nth-of-type(6)',title:'自动校验',ref:'PRD §10.4',
+     body:['提交前先做 7 项自动检查：包结构、权限一致性、安全扫描等。','有「阻断」项就不能提交；「警告」可以提交，但会摆到审核人面前。']},
+    {sel:'.publish-layout .form-block:nth-of-type(7)',title:'发布计划',ref:'PRD §11.2',
+     body:['必填：给谁用（范围）、安装策略、生效时间、更新策略、出问题找谁（支持 Owner）。','选择「锁定版本」时，锁定的必须是本次提交的版本。','提交后想改任何一项，都得新建版本重新审核。']},
+    {sel:'[data-action="submit-review"]',go:true,title:'提交审核（冻结）',ref:'PRD §10.3',
+     body:['提交 = 冻结：内容快照、发布计划、内容指纹同时锁定，生成一条等待审核的任务。','冻结后不能改；要改只能等「需修改」之后新建草稿、重走流程。'],
+     action:[{click:'[data-action="submit-review"]',thenWait:900}],
+     nextLabel:'提交审核（冻结快照与发布计划）→'},
+   ]},
+  {title:'待我审核（审核人视角）',route:'#/me/review',
+   intro:'切换到审核人视角（李昂）：「待我审核」只列出归他审、且还在等待的任务，高风险的排前面。',
+   spots:[
+    {sel:'.rq-item[data-action="go"]',title:'待审任务列表',ref:'PRD §10.5 · §2',
+     body:['审核权单独授予，不是人人都有。','提交人不能审自己提交的版本——即使有权限、在审核组里也不行。','列表能看到类型、提交人、等了多久、风险高低。']},
+    {sel:'.layout-side > .card:last-child',go:true,title:'打开审核详情',ref:'PRD §10.5',
+     body:['打开「上线检查清单 v2.0.0」（低风险模板，提交人赵倩）。','审核页一屏看全：任务队列、内容差异、校验证据、发布计划和决定区。'],
+     action:[{hash:'#/review/rt-checklist'}],
+     nextLabel:'打开「上线检查清单」审核详情 →'},
+   ]},
+  {title:'审核详情 · 决定',route:'#/review/rt-checklist',
+   intro:'关键规则：审核人必须先看到冻结的发布计划——不能只看包内容，却不知道要发给谁、怎么更新、出了问题找谁。',
+   spots:[
+    {sel:'.d-sec',text:'版本差异',title:'版本差异',ref:'PRD §10.5',
+     body:['和上一版本的差异逐行列出：加了什么、删了什么、改了什么，新增权限单独突出。','每个审核决定都绑定这份快照的指纹；快照一变，原决定作废。']},
+    {sel:'.d-sec',text:'校验证据',title:'校验证据',ref:'PRD §10.5 · §10.6',
+     body:['每项自动检查的结果和原始日志都摆在这里。','只要有「阻断」项，「通过并发布」就走不通（原型会真实拦截并提示），只能要求修改或拒绝。']},
+    {sel:'.d-sec',text:'责任与发布计划',title:'责任与发布计划（已冻结）',ref:'PRD §10.5',
+     body:['完整展示：谁签发、发给谁、安装策略、生效时间、更新策略、支持 Owner。','这些信息提交后已冻结——审核人看到的就是最终会执行的。']},
+    {sel:'.decision-bar',title:'决策区',ref:'PRD §10.6',
+     body:['只有等待中的任务才能做决定；已处理的只读。','「需修改」「拒绝」必须写意见（原型会真实校验）；「需修改」要写清验收标准，作者会拿到一份新草稿重来。']},
+    {sel:'[data-action="review-approve"]',go:true,title:'通过并发布',ref:'PRD §10.6',
+     body:['点击后系统自动完成上架：生成发布物（Release），并按范围生成对应的分发记录。','没有第二次「发布」按钮——审核通过就是发布，作者无需再操作。','点击后原型会真实执行这个决定，并自动跳到新上架内容的详情页。'],
+     action:[{click:'[data-action="review-approve"]',thenWait:1500}],
+     nextLabel:'通过并发布（系统自动上架）✓'},
+   ]},
+ ]},
+{id:'D',icon:'ri-refresh-line',name:'发布失败重试',roles:'作者 / 系统',ref:'§10.7',
+ desc:'审核通过了、但自动发布失败：任务变成只读的「发布异常」，作者用同一份冻结快照重试，不需要也不能重新审核。',
+ steps:[
+  {title:'审核页 · 发布异常（只读）',route:'#/review/rt-done3',
+   intro:'以「数据脱敏规则 v2.1.0」为例：审核已经通过，但自动发布失败。任务进入「已处理」的只读状态，不会回到待审队列。',
+   spots:[
+    {sel:'.banner.b-danger',title:'发布异常提示',ref:'PRD §10.7',
+     body:['审核人只能看失败原因，不能再次决定——决定已经生效了。','系统会自动重试；人工重试用的也是同一份冻结内容。','注意：这个页面没有决策区，因为决定已经做完了。']},
+    {sel:'.card.rq',title:'已处理队列',ref:'PRD §10.5 · §10.7',
+     body:['「已处理」包含：已决定的、被撤回的、以及发布异常的（红色标注、只读）。']},
+    {sel:'.d-sec',text:'责任与发布计划',title:'冻结快照不可变',ref:'PRD §10.7',
+     body:['无论重试几次，用的都是同一份内容、同一份发布计划、同一个内容指纹，每次都有审计。','想改内容或计划？必须新建版本重新走审核，不能借「重试」绕过。']},
+   ]},
+  {title:'个人中心 · 作者重试',route:'#/me/local',
+   intro:'作者在「本地」能看到这条发布异常记录。谁能重试：内容 Owner 永远可以；其他人按权限和范围判定。',
+   spots:[
+    {sel:'.myi',text:'数据脱敏规则',title:'发布异常内容行',ref:'PRD §10.7 · §9.2',
+     body:['这行内容处于「审核通过但发布失败」状态。','重试发布：同一份冻结快照重试，成功后只生成一组发布物 / 分发记录，不会重复。','每次重试都会留下审计记录。'],
+     edge:'原型说明：当前 mock 没有在这一行渲染「重试发布」按钮（动作处理器已存在）。正式实现需要在发布异常的行内提供重试入口——这个热点标注的就是它应该在的位置。'},
+    {sel:'.myi-acts',text:'数据脱敏规则',title:'重试入口（待接线）',ref:'PRD §10.7',
+     body:['重试入口应该在这行的操作区，只在发布异常时出现。','重试不会新建审核任务、不改写审核决定；和「上架」（草稿直接发布的快捷动作）是两回事。']},
+   ]},
+ ]},
+{id:'E',icon:'ri-terminal-window-line',name:'IDE 安装管理',roles:'普通成员 / 组织',ref:'§11 · §12',
+ desc:'真正的安装管理只在 IDE 里做：禁用、启用、卸载、更新、回退。组织强制的内容点禁用 / 卸载会被拒绝，并且会告诉你为什么、找谁。',
+ steps:[
+  {title:'IDE Market · 已安装列表',route:'#/ide/user',
+   intro:'IDE Market 是唯一管理真实安装的地方，网页那边只读状态。每个条目按当前状态给出能用的操作。',
+   spots:[
+    {sel:'[data-action="ide-disable"]',title:'禁用 / 启用',ref:'PRD §12.2 · §5.6',
+     body:['「已可用 ⇄ 已禁用」双向切换，还是同一条安装记录。','禁用不删文件，随时启用恢复。']},
+    {sel:'[data-action="ide-uninstall"]',title:'卸载',ref:'PRD §11.4',
+     body:['可选安装的内容：随便卸。','组织「默认下发」的内容：你卸载后系统会记住「这个人不想被自动装」，不会再偷偷装回来（原型 Toast 会明确提示）；但你自己想装随时能装。','这个「不自动重装」的标记不会因为定时对账被自动清掉。']},
+    {sel:'.ide-item:has([data-action="managed-reject"])',title:'组织强制条目',ref:'PRD §11.1 · §11.7',
+     body:['组织强制的内容：保持启用，不能禁用、不能卸载。','条目上直接写明「由组织管理」、出了问题找谁（支持 Owner）。']},
+    {sel:'[data-action="managed-reject"]',go:true,title:'点击组织强制条目的禁用',ref:'PRD §11.7',
+     body:['IDE 会拒绝这个操作，并弹窗解释：为什么不行、谁管的、去哪看审计。','不能只把按钮弄灰却不给解释。每次拒绝都会记审计（原型里真实记录，可在审计弹窗看到）。'],
+     action:[{click:'[data-action="managed-reject"]'}],
+     nextLabel:'尝试禁用组织强制内容（看拒绝弹窗）→'},
+   ]},
+  {title:'受管拒绝反馈',route:null,
+   enter:[{click:'[data-action="managed-reject"]'}],
+   ready:['.modal .m-body .kv'],
+   intro:'被拒绝也要拒绝得明白：说清原因、告诉你能找谁、留好审计入口。',
+   spots:[
+    {sel:'.modal .m-body .banner',title:'拒绝原因',ref:'PRD §11.7',
+     body:['明确说明：这是组织强制安装，成员不能禁用或卸载。','前端和服务端都会拦，不只是把按钮弄灰。']},
+    {sel:'.modal .m-body .kv',title:'责任方与审计入口',ref:'PRD §11.7 · §13.4',
+     body:['给出管理方和支持 Owner，知道该找谁。','审计入口有权限控制；拒绝、「不自动重装」标记、再次下发等动作全部留痕。']},
+   ]},
+  {title:'更新与版本回退',route:'#/ide/updates',
+   enter:[{click:'.modal [data-action="close-modal"]'}],
+   ready:['[data-action="check-all-updates"]'],
+   intro:'更新治理：只能更新到「组织允许的合规版本」；更新是原子切换；失败可以重试或回退到旧版本。',
+   spots:[
+    {sel:'[data-action="ide-update"]',title:'更新到合规版本',ref:'PRD §12.3 · §12.4',
+     body:['「跟随最新合规版」只升到合规的版本；「锁定版本」的组织锁死（批量检查结果里能看到「1 项由组织锁定」）。','更新过程：隔离下载 → 校验 → 健康检查 → 一次性切换。']},
+    {sel:'[data-action="ide-rollback"]',title:'版本回退',ref:'PRD §12.4',
+     body:['更新失败会自动恢复旧版本；也可以手动重试或回退。','回退只是恢复旧文件和启用状态，不产生新的安装记录，也不影响发布和分发。']},
+    {sel:'[data-action="check-all-updates"]',title:'检查全部更新',ref:'PRD §12.3',
+     body:['批量检查是防重的，重复检查不会重复计数。','结果按「可更新 / 已最新 / 失败 / 组织锁定」分类汇报。']},
+   ]},
+ ]},
+{id:'F',icon:'ri-indeterminate-circle-line',name:'下架与删除',roles:'作者',ref:'§9.2 · §11.4',
+ desc:'作者在「本地」处置自己的内容：下架是把内容从市场撤回（已装的人不受影响）；删除只是删本地草稿——已发布的冻结版本永远都在。',
+ steps:[
+  {title:'我的内容 · 处置入口',route:'#/me/local',
+   intro:'已上架的内容可以「下架」，自己的内容可以「删除」。这两个动作的影响完全不同。',
+   spots:[
+    {sel:'[data-action="unpublish"]',go:true,title:'下架',ref:'PRD §11.4',
+     body:['下架 = 撤回分发：新成员看不到了，也不能再装。','已经装了的人不受影响，继续正常使用。'],
+     action:[{click:'[data-action="unpublish"]'}],
+     nextLabel:'打开下架确认弹窗 →'},
+    {sel:'[data-action="delete-item"]',title:'删除',ref:'PRD §9.2',
+     body:['删除只清理本地草稿和未发布的版本；已经冻结发布的版本和历史记录不受影响。','有二次确认，防止手滑。']},
+   ]},
+  {title:'下架确认',route:null,
+   enter:[{click:'[data-action="unpublish"]'}],
+   ready:['[data-action="unpublish-confirm"]'],
+   intro:'下架前把影响说清楚：谁还看得到、已装的人怎么办、记录保不保留。',
+   spots:[
+    {sel:'.modal .m-body .banner',title:'影响面说明',ref:'PRD §11.4',
+     body:['撤回后新成员不可见、不能装；已安装成员保留当前版本。','如果内容有安全风险必须强制禁用，不能靠普通下架解决——要走专门的紧急处置流程并完整审计。']},
+    {sel:'[data-action="unpublish-confirm"]',go:true,title:'确认下架',ref:'PRD §11.4',
+     body:['执行后：分发记录撤回、策略重新计算、管理锁按新策略更新，全部记审计。','如果这条内容还命中其他「组织强制」分发，管理锁会保留，不会被误释放。','点击后原型会真实执行下架并返回列表（状态变为「已下架」）。'],
+     action:[{click:'[data-action="unpublish-confirm"]',thenWait:600}],
+     nextLabel:'确认下架 ✓ 完成链路'},
+   ]},
+ ]},
+];
+
+/* ---------------- 静态章节 ---------------- */
+const SECTIONS=[
+{id:'overview',icon:'ri-flag-2-line',name:'产品概述'},
+{id:'roles',icon:'ri-user-settings-line',name:'角色与权限'},
+{id:'model',icon:'ri-mind-map',name:'内容体系与对象'},
+{id:'ia',icon:'ri-organization-chart',name:'双端分工'},
+{id:'flows',icon:'ri-route-line',name:'链路模拟',badge:'6'},
+{id:'states',icon:'ri-loop-left-line',name:'状态流转'},
+];
+
+const STATIC={
+overview(){return `
+<div class="card doc-sec"><h2>产品定位 <span class="ref">PRD §1</span></h2>
+<p class="lead">Marketplace 是企业内部的内容分发平台：内容的发现、供给、审核、发布、分发、安装、使用、更新、统计和审计都在这里完成，连接作者、企业治理和成员在 InfCode 里的真实使用。</p>
+<p>Plugin 只是其中一种内容类型。MVP 统一承载 <b>Skill、Plugin、Rule、Prompt、Template</b> 五种内容，它们共用同一条「版本 → 发布 → 分发 → 安装 → 数据回流」链路。</p></div>
+<div class="card doc-sec"><h2>MVP 目标 <span class="ref">PRD §1.1</span></h2>
+<ul><li>成员能<b>找到、看懂、收藏</b>可信内容，并在 IDE 里真正装上、用起来。</li>
+<li>作者能创建或上传内容，经过<b>校验、审核、发布</b>后触达目标人群。</li>
+<li>审核人基于<b>不可变的版本快照</b>做决定，系统按冻结的配置自动发布与分发。</li>
+<li>内容的触达、安装、启用、使用、更新和治理<b>数据回流</b>到同一条内容记录上。</li></ul></div>
+<div class="card doc-sec"><h2>不做什么 <span class="ref">PRD §1.2</span></h2>
+<ul><li>不做复杂角色权限体系、多级审批、计费、跨组织交易、独立管理后台。</li>
+<li>不在 Marketplace 里重建外部数据源的权限体系。</li>
+<li>正式前端在现有 marketplace-web 与 webview 上<b>增量开发</b>，不另起一套。</li></ul></div>
+<div class="card doc-sec"><h2>如何使用本交互式 PRD</h2>
+<ul><li>左侧进入「<b>链路模拟</b>」：右侧嵌入的是<b>真实高保真原型</b>（marketplace.html），不是截图或重绘。</li><li>原型上的 <span class="chip c-info" style="height:18px">蓝色数字热点</span> 直接标注真实界面元素，点击查看该区域的 <b>PRD 指引</b>（规则、章节引用、异常边界）。</li><li><span class="chip c-success" style="height:18px">青色热点</span> 是<b>关键操作</b>：点击「推进」会在原型里<b>真实执行该动作</b>（真实导航、真实弹窗、真实状态流转），并进入下一步。</li><li>操作会改变原型状态；舞台工具栏的「重置原型」可随时恢复初始数据。</li></ul></div>`},
+
+roles(){return `
+<div class="card doc-sec"><h2>角色模型 <span class="ref">PRD §2</span></h2>
+<p class="lead">MVP 不设「作者、发布运维」等专职角色：<b>Member（企业成员）是唯一身份</b>，能做什么由「当前对象 + 动作」决定。授权沿用组织既有的 Open / Custom 两种模式。</p>
+<div class="tbl-wrap"><table class="tbl">
+<tr><th>权限点</th><th>谁能做 / 做什么</th></tr>
+<tr><td class="mono">review.decide（审核）</td><td class="muted">只给显式授予的人；范围 = 组织授权 ∩ 任务分配。<b>提交人不能审自己提交的版本</b>，这条不被任何权限覆盖</td></tr>
+<tr><td class="mono">publish.retry（发布重试）</td><td class="muted">内容 Owner 永远可以重试自己的内容；全程记审计</td></tr>
+<tr><td class="mono">distribution.manage（分发管理）</td><td class="muted">再次下发 / 管理「不自动重装」标记；成员恢复自己的默认安装不需要这个权限</td></tr>
+<tr><td class="mono">audit.read（审计读取）</td><td class="muted">看完整审计；仍受数据可见范围约束，Open 模式也不能越界</td></tr>
+<tr><td class="mono">emergency.*（紧急安全控制）</td><td class="muted">可选的紧急处置能力，企业显式启用后映射到既有安全负责人；默认不开启、不随 Open 授予</td></tr>
+</table></div></div>
+<div class="card doc-sec"><h2>责任分工 <span class="ref">PRD §2.2</span></h2>
+<div class="tbl-wrap"><table class="tbl">
+<tr><th>环节</th><th>成员 / 作者</th><th>审核人</th><th>系统</th></tr>
+<tr><td>发现与安装</td><td class="muted">浏览、收藏、发起安装</td><td class="muted">同普通成员</td><td class="muted">校验可见性、兼容性和安装策略</td></tr>
+<tr><td>创建与提交</td><td class="muted">创建 / 上传 / 配置发布计划并提交</td><td class="muted">也能以作者身份操作</td><td class="muted">校验包、冻结版本与发布计划、生成审核任务</td></tr>
+<tr><td>审核决定</td><td class="muted">无审核权</td><td class="muted">只能审「归自己管 ∩ 非本人提交」的版本</td><td class="muted">记录不可重复的决定和证据</td></tr>
+<tr><td>发布与分发</td><td class="muted">提交前配好发布计划</td><td class="muted">核对冻结的计划</td><td class="muted">通过后自动生成发布物和分发记录</td></tr>
+<tr><td>数据与审计</td><td class="muted">看市场与自己内容的数据</td><td class="muted">看职权范围内的提交与证据</td><td class="muted">聚合指标，按权限提供完整审计</td></tr>
+</table></div></div>`},
+
+model(){return `
+<div class="card doc-sec"><h2>五种内容类型 <span class="ref">PRD §3</span></h2>
+<div class="tbl-wrap"><table class="tbl">
+<tr><th>类型</th><th>是什么</th><th>独立发布最少需要什么</th></tr>
+<tr><td><b>Skill</b></td><td class="muted">给 Agent 用的可复用任务能力</td><td class="muted">一个 SKILL.md；可附参考文档、脚本、资源</td></tr>
+<tr><td><b>Plugin</b></td><td class="muted">把多项能力打包在一起的复合安装单元</td><td class="muted">清单文件 + 组件列表；可含 Skill / Rule / Prompt / MCP 等</td></tr>
+<tr><td><b>Rule</b></td><td class="muted">对 Agent 或工程持续生效的行为约束</td><td class="muted">规则正文、生效范围与优先级</td></tr>
+<tr><td><b>Prompt</b></td><td class="muted">可复用的提示词模板</td><td class="muted">正文、变量定义与示例</td></tr>
+<tr><td><b>Template</b></td><td class="muted">文档 / 项目 / 工作流的交付骨架</td><td class="muted">模板文件、生成参数与目标位置</td></tr>
+</table></div>
+<p>独立发布的 Skill / Rule / Prompt / Template 各有独立身份；<b>Plugin 内的组件默认只属于 Plugin 包</b>，单独发布过的组件才有自己的市场条目。</p></div>
+<div class="card doc-sec"><h2>一条内容的一生 <span class="ref">PRD §5</span></h2>
+<div class="chain">
+<span class="cn hl">内容条目<small>Content</small></span><span class="arr">→</span>
+<span class="cn">版本快照<small>ContentVersion</small></span><span class="arr">→</span>
+<span class="cn">发布物<small>Release · 含内容指纹</small></span><span class="arr">→</span>
+<span class="cn">分发记录<small>Distribution · 范围 × 策略</small></span><span class="arr">→</span>
+<span class="cn hl">安装记录<small>Installation · 每个环境一条</small></span>
+</div>
+<ul><li><b>版本快照 / 发布物</b>：提交即冻结、不可变，绑定内容指纹与审核记录；要改就得发新版本、重新审核。</li>
+<li><b>发布计划 → 分发记录</b>：发布计划随提交冻结；审核通过后，每个分发范围自动生成一条分发记录。计划本身不代表已下发。</li>
+<li><b>安装意向单（InstallIntent）</b>：网页交给 IDE 的临时凭证（防重复钥匙 + 10 分钟过期），IDE 确认前不产生安装记录。</li>
+<li><b>安装记录（Installation）</b>：同人、同内容、同环境只有一条，承载全部安装状态流转。</li></ul></div>
+<div class="card doc-sec"><h2>来源与治理 <span class="ref">PRD §6</span></h2>
+<div class="tbl-wrap"><table class="tbl">
+<tr><th>概念</th><th>取值</th><th>一句话说明</th></tr>
+<tr><td>来源生态</td><td class="muted">企业官方 / InfCode / Claude / 第三方</td><td class="muted">筛选与信任标识的第一层</td></tr>
+<tr><td>供给方式</td><td class="muted">原创 / 镜像 / 组合</td><td class="muted">镜像要锁定上游版本；组合要逐个组件给来源证据</td></tr>
+<tr><td>签发方</td><td class="muted">团队 / 官方</td><td class="muted">对这份内容的发布与支持负责的主体</td></tr>
+<tr><td>安装策略</td><td class="muted">可选 / 默认下发 / 组织强制</td><td class="muted">决定是成员主动装还是组织装好，以及成员能不能动它</td></tr>
+<tr><td>更新策略</td><td class="muted">跟随最新合规版 / 锁定版本</td><td class="muted">自动跟进合规新版本，或锁死在组织指定版本</td></tr>
+</table></div></div>`},
+
+ia(){return `
+<div class="card doc-sec"><h2>双端分工 <span class="ref">PRD §4</span></h2>
+<p class="lead">MVP 不新增管理后台：<b>网页端</b>管「发现、供给、审核、数据」；<b>IDE 端</b>管「跟本地环境有关的真实安装」。一份事实，两个窗口。</p>
+<div class="tbl-wrap"><table class="tbl">
+<tr><th style="width:50%">Marketplace 网页端</th><th>InfCode IDE（IDE Market）</th></tr>
+<tr><td class="muted">市场首页 · 内容详情 · 个人中心（本地 / 收藏 / 待我审核 / 数据概览 / 内容发布 / 审核详情）</td><td class="muted">待确认安装 · 已安装 · 待配置 · 更新可用 · 组织管理 · 异常与回退</td></tr>
+<tr><td class="muted">负责安装前的发现、理解和<b>风险判断</b>；只生成安装意向单、展示状态摘要；<b>不创建安装记录、不做安装管理</b></td><td class="muted">负责确认装到哪个环境，以及真实的下载、安装、配置、启停、更新、回退和卸载；把状态回传给网页</td></tr>
+</table></div>
+<p>术语约定：IDE 侧叫「<b>版本回退</b>」；发布侧叫「<b>撤回</b>」；分发侧叫「<b>暂停 / 结束</b>」。</p></div>
+<div class="card doc-sec"><h2>关键设计原则</h2>
+<ul><li><b>单一事实源</b>：安装事实只有一份安装记录，网页上的卡片和详情只是它的同步摘要。</li><li><b>冻结即不可变</b>：提交时锁定版本快照 + 发布计划 + 内容指纹；要改就发新版本。</li><li><b>没有第二次发布</b>：审核通过即由系统自动上架，不需要作者再点「发布」。</li><li><b>受管要可解释</b>：组织强制的内容被拒绝操作时，必须说明谁管的、找谁，不能只弄灰按钮。</li></ul></div>`},
+
+states(){return `
+<div class="card doc-sec"><h2>安装意向单 <span class="ref">PRD §8.2</span></h2>
+<div class="sm-row"><span class="sm-node brand">已生成</span><span class="sm-arr">→</span><span class="sm-node brand">已唤起 IDE</span><span class="sm-arr">→</span><span class="sm-node key">IDE 已确认（带回安装记录编号）</span></div>
+<div class="sm-row"><span class="sm-note">旁路：已过期（10 分钟）/ 失败；没过期前重试用同一把防重复钥匙，过期才新开一张</span></div></div>
+<div class="card doc-sec"><h2>安装记录的状态（9 种） <span class="ref">PRD §5.6 · §12.2</span></h2>
+<div class="sm-row"><span class="sm-node brand">等待安装</span><span class="sm-arr">→</span><span class="sm-node brand">安装中</span><span class="sm-arr">→</span><span class="sm-node key">已可用</span><span class="sm-arr">⇄</span><span class="sm-node">已禁用</span></div>
+<div class="sm-row"><span class="sm-node brand">安装中</span><span class="sm-arr">→</span><span class="sm-node warn">待配置</span><span class="sm-arr">─ 完成配置 →</span><span class="sm-node key">已可用</span></div>
+<div class="sm-row"><span class="sm-node err">异常</span><span class="sm-arr">─ 重试 →</span><span class="sm-node brand">安装中</span><span class="sm-note">失败原因只挂在当前状态上：恢复后自动清除，历史留在审计里</span></div>
+<div class="sm-row"><span class="sm-node warn">状态待同步</span><span class="sm-arr">─ 重新同步 →</span><span class="sm-node key">已可用</span><span class="sm-note">卸载：卸载中 → 已移除</span></div>
+<p>组织强制的内容禁用 / 卸载会被拒绝并弹窗解释。组织下发失败不新增状态：保持「等待安装 / 异常」并记录原因（客户端离线、目标不可达等）。自动重试上限：24 小时内最多 3 次。</p></div>
+<div class="card doc-sec"><h2>发布与审核 <span class="ref">PRD §5.3 · §10</span></h2>
+<div class="sm-row"><span class="sm-node">草稿</span><span class="sm-arr">─ 提交冻结 →</span><span class="sm-node brand">审核中</span><span class="sm-arr">─ 通过 →</span><span class="sm-node key">已上架（系统自动生成发布物 + 分发记录）</span></div>
+<div class="sm-row"><span class="sm-node brand">审核中</span><span class="sm-arr">─ 需修改 →</span><span class="sm-node warn">退回修改 → 新草稿重来</span><span class="sm-arr">─ 拒绝 →</span><span class="sm-node err">已拒绝（终止，记录保留）</span></div>
+<div class="sm-row"><span class="sm-note">旁路：作者撤回（不可再提同一任务）· 发布异常（只读，同一份快照重试 → 已上架）· 版本撤回（关联分发一并结束）</span></div></div>
+<div class="card doc-sec"><h2>分发记录的生命周期 <span class="ref">PRD §5.4 · §11.4</span></h2>
+<div class="sm-row"><span class="sm-node">待生效</span><span class="sm-arr">→</span><span class="sm-node key">生效中</span><span class="sm-arr">⇄</span><span class="sm-node warn">已暂停</span><span class="sm-arr">→</span><span class="sm-node">已结束</span></div>
+<p>任何状态变化都会先对每个受影响的环境<b>原子重算</b>全部命中的分发，再按唯一有效策略（组织强制 &gt; 默认下发 &gt; 可选）更新安装记录和管理锁；范围重叠冲突时从严处理（宁可不可见也不放行）。</p></div>`},
+};
+
+/* ---------------- 渲染框架 ---------------- */
+const doc=document.getElementById('doc');
+const snav=document.getElementById('snav');
+let curSection='overview';
+let curFlow=0, curStep=0, selSpot=-1;
+let flowsRoot=null, pinLayer=null, frameEl=null, activating=false;
+
+function renderSnav(){
+  snav.innerHTML=`<div class="sn-title">PRD 章节</div>`+SECTIONS.map(s=>
+    `<button class="${s.id===curSection?'active':''}" data-sec="${s.id}"><i class="${s.icon}"></i>${s.name}${s.badge?`<span class="bdg">${s.badge}</span>`:''}</button>`).join('');
+  snav.querySelectorAll('button').forEach(b=>b.onclick=()=>{curSection=b.dataset.sec;render();window.scrollTo({top:0});});
+}
+
+function render(){
+  renderSnav();
+  doc.innerHTML='';
+  if(curSection==='flows'){ mountFlows(); }
+  else doc.innerHTML=STATIC[curSection]();
+}
+
+/* ---------------- 链路模拟：挂载持久容器（iframe 状态不丢） ---------------- */
+function mountFlows(){
+  if(!flowsRoot){
+    flowsRoot=document.createElement('div');
+    flowsRoot.className='doc';
+    flowsRoot.innerHTML=`
+    <div class="card doc-sec flow-head">
+      <h2>链路模拟 <span class="ref">真实原型驱动</span></h2>
+      <p class="lead">右侧为嵌入的高保真原型（marketplace.html）。蓝色热点标注真实界面元素，点击查看 PRD 指引；青色热点会在原型中<b>真实执行操作</b>并推进链路。</p>
+      <div class="flow-chips" id="fchips"></div>
+      <div class="flow-meta" id="fmeta"></div>
+    </div>
+    <div class="card doc-sec"><div class="stepper" id="stepper"></div></div>
+    <div id="sim-slot"></div>`;
+    const fc=flowsRoot.querySelector('#fchips');
+    fc.innerHTML=FLOWS.map((fl,i)=>`<button class="fchip" data-f="${i}"><i class="${fl.icon}"></i>链路${fl.id} · ${fl.name}</button>`).join('');
+    fc.querySelectorAll('.fchip').forEach(b=>b.onclick=()=>{selectFlow(+b.dataset.f);});
+  }
+  doc.appendChild(flowsRoot);
+  renderFlowHead();
+  renderStepper();
+  renderSimSlot();
+}
+
+function renderFlowHead(){
+  const f=FLOWS[curFlow];
+  flowsRoot.querySelectorAll('.fchip').forEach((b,i)=>b.classList.toggle('on',i===curFlow));
+  flowsRoot.querySelector('#fmeta').innerHTML=`<span><i class="ri-user-line"></i> 参与角色：${f.roles}</span><span class="mono">${f.ref}</span><span style="flex:1"></span><span>${f.desc}</span>`;
+}
+
+function renderStepper(){
+  const f=FLOWS[curFlow];
+  const done=curStep>=f.steps.length;
+  $('#stepper').innerHTML=f.steps.map((s,i)=>`
+    <div class="step ${done||i<curStep?'done':''} ${i===curStep&&!done?'now':''}" data-s="${i}">
+      <span class="s-dot">${done||i<curStep?'<i class="ri-check-line"></i>':i+1}</span>
+      <span class="s-label">${s.title}</span><span class="s-route">${s.route||'弹窗 / 当前页'}</span></div>`).join('')
+    +`<div class="step ${done?'now':''}" data-s="${f.steps.length}"><span class="s-dot"><i class="ri-flag-line"></i></span><span class="s-label">完成</span></div>`;
+  $('#stepper').querySelectorAll('.step').forEach(s=>s.onclick=()=>{selectStep(+s.dataset.s);});
+}
+
+let simLive=null;
+function renderSimSlot(){
+  const slot=flowsRoot.querySelector('#sim-slot');
+  const f=FLOWS[curFlow];
+  const done=curStep>=f.steps.length;
+  let doneEl=slot.querySelector('#done-slot');
+  if(done){
+    if(simLive) simLive.style.display='none';
+    if(!doneEl){doneEl=document.createElement('div');doneEl.id='done-slot';slot.appendChild(doneEl);}
+    doneEl.style.display='';
+    doneEl.innerHTML=`<div class="card flow-done">
+      <span class="fd-icon"><i class="ri-checkbox-circle-line"></i></span>
+      <b>链路${f.id} · ${f.name} — 已完成</b>
+      <p>${f.desc}</p>
+      <div style="display:flex;gap:8px">
+        <button class="btn secondary" id="restart"><i class="ri-restart-line"></i>重新走一遍</button>
+        ${FLOWS[curFlow+1]?`<button class="btn primary" id="nextflow">下一条链路：${FLOWS[curFlow+1].name}<i class="ri-arrow-right-line"></i></button>`:''}
+      </div></div>`;
+    doneEl.querySelector('#restart').onclick=()=>selectStep(0);
+    const nf=doneEl.querySelector('#nextflow'); if(nf)nf.onclick=()=>selectFlow(curFlow+1);
+    return;
+  }
+  if(doneEl) doneEl.style.display='none';
+  if(!simLive){
+    simLive=document.createElement('div');
+    simLive.innerHTML=`<div class="sim">
+    <div class="card guide">
+      <div class="g-head"><i class="ri-lightbulb-line" style="color:var(--brand-500)"></i><b>PRD 交互指引</b><span class="g-step" id="gstep"></span></div>
+      <div class="g-body" id="gbody"></div>
+    </div>
+    <div class="stage-col">
+      <div class="card">
+        <div class="stage-bar">
+          <span class="sb-route"><span class="dot"></span><i class="ri-window-line"></i>高保真原型 · 实时联动 <span class="mono" id="route-echo"></span></span>
+          <span class="sb-right">
+            <button class="btn secondary sm" id="reset-proto"><i class="ri-restart-line"></i>重置原型</button>
+          </span>
+        </div>
+        <div class="legend">
+          <span class="lg"><span class="dot b">n</span>交互指引热点（标注真实元素，点击查看）</span>
+          <span class="lg"><span class="dot t"><i class="ri-flashlight-line" style="font-size:9px"></i></span>关键操作（在原型中真实执行并推进）</span>
+        </div>
+      </div>
+      <div class="frame-wrap" id="frame-wrap">
+        <div class="frame-loading" id="frame-loading"><i class="ri-loader-4-line"></i>正在加载高保真原型…</div>
+        <div class="frame-err" id="frame-err"><i class="ri-error-warning-line" style="font-size:22px;color:var(--color-warning-fg)"></i>
+          <div>无法访问原型页面（跨域限制）。<br>请通过 InfCode 浏览器或本地 HTTP 服务打开本页面，而不是 file:// 直接双击打开。</div></div>
+        <div class="pin-layer" id="pin-layer"></div>
+      </div>
+      <div class="sim-nav">
+        <button class="btn secondary sm" id="prev"><i class="ri-arrow-left-line"></i>上一步</button>
+        <span style="font-size:11px;color:var(--color-fg-subtle)">提示：青色热点即本步关键操作，会在原型中真实执行</span>
+        <button class="btn primary sm" id="next">跳过此步<i class="ri-arrow-right-line"></i></button>
+      </div>
+    </div>
+  </div>`;
+    slot.appendChild(simLive);
+    /* iframe 只创建一次且不再移动（移动会触发重载丢状态） */
+    const wrap=simLive.querySelector('#frame-wrap');
+    frameEl=document.createElement('iframe');
+    frameEl.src='marketplace.html#/market';
+    FW.el=frameEl;
+    frameEl.addEventListener('load',()=>{ const l=simLive.querySelector('#frame-loading'); if(l)l.style.display='none'; scrollBound=false; bindFrameScroll(); activateStep(); });
+    wrap.insertBefore(frameEl,simLive.querySelector('#pin-layer'));
+    pinLayer=simLive.querySelector('#pin-layer');
+    simLive.querySelector('#reset-proto').onclick=()=>{ const l=simLive.querySelector('#frame-loading'); if(l)l.style.display='flex'; FW.reload(); selSpot=-1; };
+    simLive.querySelector('#prev').onclick=()=>selectStep(curStep-1);
+    simLive.querySelector('#next').onclick=()=>selectStep(curStep+1);
+  }
+  simLive.style.display='';
+  simLive.querySelector('#prev').disabled=curStep===0;
+  if(frameEl.contentDocument&&frameEl.contentDocument.readyState==='complete'){
+    const l=simLive.querySelector('#frame-loading'); if(l)l.style.display='none';
+    bindFrameScroll();
+    activateStep();
+  }
+}
+
+/* ---------------- 步骤激活：导航 → 准备动作 → 等待就绪 → 布点 ---------------- */
+async function activateStep(){
+  if(activating) return; activating=true;
+  try{
+    const f=FLOWS[curFlow]; if(curStep>=f.steps.length) return;
+    const s=f.steps[curStep];
+    selSpot=-1;
+    renderGuide(s);
+    drawPins(s,true);
+    /* 同源检测 */
+    if(!FW.doc()){ const e=$('#frame-err'); if(e)e.style.display='flex'; return }
+    const e=$('#frame-err'); if(e)e.style.display='none';
+    if(s.route) FW.nav(s.route);
+    await sleep(200);
+    await runOps(s.enter);
+    const timeout=s.readyTimeout||7000;
+    if(s.readyAny) await until(()=>s.readyAny.some(sel=>FW.find(sel)),timeout);
+    else await until(()=>(s.ready||s.spots.map(p=>p.sel)).every(sel=>FW.find(sel,s.spots.find(p=>p.sel===sel)&&p.text)),timeout);
+    drawPins(s);
+    /* 若当前视口内没有任何热点，仅滚动 iframe 使首个热点可见（不牵动外链路面板） */
+    const anyVisible=[...pinLayer.querySelectorAll('.pin')].some(pn=>!pn.classList.contains('hidden'));
+    if(!anyVisible){const el=FW.find(s.spots[0].sel,s.spots[0].text); if(el) fwScrollTo(el);}
+    updateRouteEcho();
+  } finally { activating=false; }
+}
+
+function updateRouteEcho(){ const r=$('#route-echo'); if(r) r.textContent=FW.hash(); }
+
+function fwScrollTo(el){
+  try{
+    const w=FW.el.contentWindow;
+    const r=el.getBoundingClientRect();
+    const y=r.top+w.scrollY-w.innerHeight/2+r.height/2;
+    w.scrollTo({top:Math.max(y,0),behavior:'smooth'});
+    setTimeout(()=>positionPins(),400);
+    setTimeout(()=>positionPins(),800);
+  }catch(e){}
+}
+
+/* ---------------- 热点绘制 ---------------- */
+function drawPins(s,loading){
+  if(!pinLayer) return;
+  pinLayer.innerHTML=s.spots.map((p,i)=>
+    `<span class="pin ${p.go?'go':''} ${i===selSpot?'sel':''} ${loading?'hidden':''}" data-i="${i}">${p.go?'<i class="ri-flashlight-line" style="font-size:10px"></i>':i+1}</span>`).join('');
+  pinLayer.querySelectorAll('.pin').forEach(pn=>pn.onclick=()=>toggleSpot(+pn.dataset.i));
+  positionPins(s);
+}
+
+function positionPins(s){
+  if(!pinLayer||!FW.doc()) return;
+  s=s||FLOWS[curFlow].steps[curStep]; if(!s) return;
+  const vh=FW.el.contentWindow.innerHeight||800;
+  pinLayer.querySelectorAll('.pin').forEach((pn,i)=>{
+    const p=s.spots[i];
+    const el=FW.find(p.sel,p.text);
+    if(!el){pn.classList.add('hidden');return}
+    const r=el.getBoundingClientRect();
+    if((r.width===0&&r.height===0)||r.bottom<0||r.top>vh){pn.classList.add('hidden');return}
+    pn.classList.remove('hidden');
+    pn.style.left=(p.corner==='tl'?r.left:r.right)+'px';
+    pn.style.top=r.top+'px';
+  });
+}
+
+/* 原型内部滚动 / 尺寸变化时跟随 */
+let scrollBound=false;
+function bindFrameScroll(){
+  if(scrollBound||!FW.el) return;
+  try{
+    FW.el.contentWindow.addEventListener('scroll',()=>positionPins(),true);
+    FW.el.contentWindow.addEventListener('resize',()=>positionPins());
+    scrollBound=true;
+  }catch(e){}
+}
+setInterval(()=>{ if(curSection==='flows'&&pinLayer&&FW.doc()){positionPins();updateRouteEcho();} },700);
+
+/* ---------------- 指引面板 ---------------- */
+function renderGuide(s){
+  const f=FLOWS[curFlow];
+  $('#gstep').textContent=`${f.name} · ${curStep+1}/${f.steps.length}`;
+  $('#gbody').innerHTML=`<div class="g-intro"><b style="color:var(--color-fg)">本步说明</b>：${s.intro}</div>`
+    +s.spots.map((p,i)=>spotHTML(p,i,i===selSpot)).join('');
+  bindGuideEvents(s);
+}
+
+function spotHTML(p,i,open){
+  return `<div class="g-item ${open?'on':''}" data-i="${i}">
+    <div class="gi-head"><span class="n ${p.go?'t':''}">${p.go?'<i class="ri-flashlight-line" style="font-size:9px"></i>':i+1}</span>${p.title}<span class="gi-ref">${p.ref}</span></div>
+    ${open?`<div class="gi-body"><ul>${p.body.map(r=>`<li>${r}</li>`).join('')}</ul>
+      ${p.edge?`<div class="gi-edge"><b><i class="ri-error-warning-line"></i> 异常与边界</b>${p.edge}</div>`:''}
+      ${p.go?`<button class="g-adv" data-adv="${i}">${p.nextLabel||'执行此操作，进入下一步'}<i class="ri-arrow-right-line"></i></button>`:''}
+    </div>`:''}
+  </div>`;
+}
+
+function bindGuideEvents(s){
+  $('#gbody').querySelectorAll('.g-item .gi-head').forEach(h=>h.onclick=()=>toggleSpot(+h.parentElement.dataset.i));
+  const adv=$('#gbody').querySelector('[data-adv]');
+  if(adv) adv.onclick=async e=>{
+    e.stopPropagation();
+    const p=s.spots[+adv.dataset.adv];
+    adv.disabled=true; adv.innerHTML='<i class="ri-loader-4-line"></i>正在原型中执行…';
+    await runOps(p.action);
+    selectStep(curStep+1);
+  };
+}
+
+function toggleSpot(i){
+  selSpot=(selSpot===i)?-1:i;
+  const s=FLOWS[curFlow].steps[curStep];
+  renderGuide(s);
+  if(pinLayer) pinLayer.querySelectorAll('.pin').forEach((pn,pi)=>pn.classList.toggle('sel',pi===selSpot));
+  /* 滚动到对应元素（只滚动 iframe 内部） */
+  if(selSpot>=0){const p=s.spots[selSpot];const el=FW.find(p.sel,p.text);
+    if(el) fwScrollTo(el);}
+}
+
+/* ---------------- 导航控制 ---------------- */
+function selectFlow(i){curFlow=i;curStep=0;selSpot=-1;renderFlowHead();renderStepper();renderSimSlot();}
+function selectStep(i){
+  const f=FLOWS[curFlow];
+  curStep=Math.max(0,Math.min(i,f.steps.length));
+  selSpot=-1;renderStepper();renderSimSlot();
+}
+
+render();
+</script>
+</body>
+</html>

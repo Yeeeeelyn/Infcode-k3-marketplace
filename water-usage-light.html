@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>本月用量</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Helvetica Neue", sans-serif;
+    background: #f5f5f7;
+    color: #1d1d1f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 40px;
+    animation: fadeUp 0.9s cubic-bezier(0.28, 0.84, 0.42, 1) both;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .title {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: #1d1d1f;
+  }
+  .title span {
+    font-weight: 400;
+    color: #86868b;
+    margin-left: 8px;
+  }
+
+  .orb-wrap {
+    position: relative;
+    width: 320px;
+    height: 320px;
+  }
+  #orb { width: 100%; height: 100%; display: block; }
+
+  .orb-label {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+  }
+  .pct {
+    font-size: 76px;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    color: #fff;
+    text-shadow: 0 2px 12px rgba(0, 60, 160, 0.35);
+    font-variant-numeric: tabular-nums;
+  }
+  .pct small { font-size: 32px; font-weight: 500; }
+  .pct-sub {
+    margin-top: 8px;
+    font-size: 15px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.85);
+    letter-spacing: 0.12em;
+    text-shadow: 0 1px 6px rgba(0, 60, 160, 0.3);
+  }
+
+  .status {
+    font-size: 14px;
+    font-weight: 600;
+    color: #0a84ff;
+    background: rgba(10, 132, 255, 0.10);
+    padding: 7px 20px;
+    border-radius: 980px;
+    letter-spacing: 0.06em;
+  }
+
+  .stats {
+    display: flex;
+    gap: 48px;
+  }
+  .stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  .s-label { font-size: 13px; color: #86868b; letter-spacing: 0.04em; font-weight: 500; }
+  .s-value { font-size: 30px; font-weight: 700; color: #1d1d1f; font-variant-numeric: tabular-nums; }
+</style>
+</head>
+<body>
+  <main class="stage">
+    <div class="title">本月用量<span>TokenHub</span></div>
+
+    <div class="orb-wrap">
+      <canvas id="orb"></canvas>
+      <div class="orb-label">
+        <div class="pct"><span id="pctNum">0</span><small>%</small></div>
+        <div class="pct-sub">用量占比</div>
+      </div>
+    </div>
+
+    <div class="status">额度充足</div>
+
+    <div class="stats">
+      <div class="stat">
+        <span class="s-value">6.2B</span>
+        <span class="s-label">已使用</span>
+      </div>
+      <div class="stat">
+        <span class="s-value">10B</span>
+        <span class="s-label">总量</span>
+      </div>
+      <div class="stat">
+        <span class="s-value">3.8B</span>
+        <span class="s-label">剩余</span>
+      </div>
+    </div>
+  </main>
+
+<script>
+(() => {
+  const PCT = 0.62;
+  const canvas = document.getElementById('orb');
+  const ctx = canvas.getContext('2d');
+  const pctNum = document.getElementById('pctNum');
+
+  let W, H, CX, CY, R;
+  function resize() {
+    const dpr = Math.min(devicePixelRatio || 1, 2);
+    W = canvas.clientWidth; H = canvas.clientHeight;
+    canvas.width = W * dpr; canvas.height = H * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    CX = W / 2; CY = H / 2; R = W / 2 - 6;
+  }
+  new ResizeObserver(resize).observe(canvas);
+  resize();
+
+  // 注水动画
+  const FILL_MS = 1800;
+  const ease = (t) => 1 - Math.pow(1 - t, 3);
+  let start = null;
+  const progress = (now) => {
+    if (start === null) start = now;
+    return ease(Math.min((now - start) / FILL_MS, 1));
+  };
+
+  function draw(now) {
+    const t = now / 1000;
+    const p = progress(now);
+    const level = PCT * p;
+    const wy = CY + R * (1 - 2 * level); // 液面 y
+
+    ctx.clearRect(0, 0, W, H);
+
+    // 底部软阴影（悬浮感，双层更真实）
+    const dropY = CY + R + 12;
+    ctx.save();
+    ctx.translate(CX, dropY);
+    ctx.scale(1, 0.2);
+    let drop = ctx.createRadialGradient(0, 0, 0, 0, 0, R * 0.95);
+    drop.addColorStop(0, 'rgba(20, 45, 100, 0.22)');
+    drop.addColorStop(0.6, 'rgba(20, 45, 100, 0.08)');
+    drop.addColorStop(1, 'rgba(20, 45, 100, 0)');
+    ctx.beginPath();
+    ctx.arc(0, 0, R * 0.95, 0, Math.PI * 2);
+    ctx.fillStyle = drop;
+    ctx.fill();
+    // 紧贴球底的深影核
+    const core = ctx.createRadialGradient(0, 0, 0, 0, 0, R * 0.5);
+    core.addColorStop(0, 'rgba(15, 35, 85, 0.28)');
+    core.addColorStop(1, 'rgba(15, 35, 85, 0)');
+    ctx.beginPath();
+    ctx.arc(0, 0, R * 0.5, 0, Math.PI * 2);
+    ctx.fillStyle = core;
+    ctx.fill();
+    ctx.restore();
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(CX, CY, R, 0, Math.PI * 2);
+    ctx.clip();
+
+    // 玻璃内壁：顶部透亮的微渐变
+    const wall = ctx.createLinearGradient(0, CY - R, 0, CY + R);
+    wall.addColorStop(0, 'rgba(255, 255, 255, 0.65)');
+    wall.addColorStop(0.55, 'rgba(240, 246, 252, 0.25)');
+    wall.addColorStop(1, 'rgba(214, 228, 244, 0.35)');
+    ctx.fillStyle = wall;
+    ctx.fillRect(CX - R, CY - R, R * 2, R * 2);
+
+    if (level > 0.001) {
+      // 波层画满整个圆宽，由圆形裁剪收边，保证两侧贴满玻璃
+      const x0 = CX - R, x1 = CX + R;
+      const steps = 64;
+
+      // 三层水波（后 → 前，大振幅 + 二次谐波更自然）
+      const layers = [
+        { amp: 8.0, k: 0.020, speed: 1.2,  phase: 0.0, lift: -10, color: 'rgba(90, 165, 255, 0.14)' },
+        { amp: 6.5, k: 0.026, speed: -1.0, phase: 2.2, lift: -5,  color: 'rgba(70, 155, 255, 0.24)' },
+        { amp: 5.0, k: 0.032, speed: 0.8,  phase: 4.1, lift: 0,   color: null }, // 前层用浅色渐变
+      ];
+
+      for (const layer of layers) {
+        const baseY = wy + layer.lift;
+        ctx.beginPath();
+        for (let i = 0; i <= steps; i++) {
+          const x = x0 + (x1 - x0) * (i / steps);
+          const dx = x - CX;
+          const y = baseY
+            + Math.sin(dx * layer.k + t * layer.speed + layer.phase) * layer.amp
+            + Math.sin(dx * layer.k * 2.3 - t * layer.speed * 0.7 + layer.phase * 1.6) * layer.amp * 0.35;
+          i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        }
+        ctx.lineTo(x1, CY + R); ctx.lineTo(x0, CY + R);
+        ctx.closePath();
+
+        if (layer.color) {
+          ctx.fillStyle = layer.color;
+        } else {
+          const g = ctx.createLinearGradient(0, baseY, 0, CY + R);
+          g.addColorStop(0, 'rgba(110, 180, 255, 0.82)');
+          g.addColorStop(1, 'rgba(58, 140, 245, 0.88)');
+          ctx.fillStyle = g;
+        }
+        ctx.fill();
+      }
+
+      // 液面接触阴影（前层波峰下方的一道暗带，制造厚度）
+      const contact = ctx.createLinearGradient(0, wy - 4, 0, wy + 22);
+      contact.addColorStop(0, 'rgba(30, 80, 160, 0)');
+      contact.addColorStop(0.35, 'rgba(30, 80, 160, 0.10)');
+      contact.addColorStop(1, 'rgba(30, 80, 160, 0)');
+      ctx.fillStyle = contact;
+      ctx.fillRect(CX - R, wy - 4, R * 2, 26);
+
+      // 水体深度阴影：越靠近球壁越暗（模拟光线被水吸收）
+      const depth = ctx.createRadialGradient(CX, CY, R * 0.35, CX, CY, R);
+      depth.addColorStop(0, 'rgba(20, 70, 150, 0)');
+      depth.addColorStop(0.75, 'rgba(20, 70, 150, 0.06)');
+      depth.addColorStop(1, 'rgba(20, 70, 150, 0.16)');
+      ctx.fillStyle = depth;
+      ctx.fillRect(CX - R, wy, R * 2, CY + R - wy);
+
+      // 水底气积暗影（球底聚光暗区）
+      const bottomShade = ctx.createRadialGradient(CX, CY + R * 0.95, 0, CX, CY + R * 0.95, R * 0.9);
+      bottomShade.addColorStop(0, 'rgba(20, 70, 150, 0.14)');
+      bottomShade.addColorStop(1, 'rgba(20, 70, 150, 0)');
+      ctx.fillStyle = bottomShade;
+      ctx.fillRect(CX - R, CY, R * 2, R);
+
+      // 液面下方的柔和高光（水体透光感）
+      const waterGlow = ctx.createRadialGradient(CX - R * 0.2, wy + R * 0.35, 0, CX - R * 0.2, wy + R * 0.35, R * 0.7);
+      waterGlow.addColorStop(0, 'rgba(255, 255, 255, 0.14)');
+      waterGlow.addColorStop(1, 'rgba(255, 255, 255, 0)');
+      ctx.fillStyle = waterGlow;
+      ctx.fillRect(CX - R, wy, R * 2, CY + R - wy);
+    }
+
+    // 玻璃内缘阴影（底部轻微压暗，增强球体厚度）
+    const inner = ctx.createRadialGradient(CX, CY, R * 0.6, CX, CY, R);
+    inner.addColorStop(0, 'rgba(20, 50, 100, 0)');
+    inner.addColorStop(0.85, 'rgba(20, 50, 100, 0.06)');
+    inner.addColorStop(1, 'rgba(20, 50, 100, 0.18)');
+    ctx.fillStyle = inner;
+    ctx.fillRect(CX - R, CY - R, R * 2, R * 2);
+
+    // 顶部主高光（通透感的关键）
+    ctx.save();
+    ctx.translate(CX - R * 0.34, CY - R * 0.56);
+    ctx.rotate(-0.5);
+    const spec = ctx.createRadialGradient(0, 0, 0, 0, 0, R * 0.5);
+    spec.addColorStop(0, 'rgba(255, 255, 255, 0.85)');
+    spec.addColorStop(0.5, 'rgba(255, 255, 255, 0.25)');
+    spec.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    ctx.fillStyle = spec;
+    ctx.scale(1, 0.42);
+    ctx.beginPath();
+    ctx.arc(0, 0, R * 0.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    ctx.restore(); // 解除圆形裁剪
+
+    // 玻璃边缘：外圈轨道 + 发丝线 + 顶部亮弧 + 底部反光弧
+    ctx.beginPath();
+    ctx.arc(CX, CY, R + 3, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.05)';
+    ctx.lineWidth = 5;
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(CX, CY, R - 1, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.12)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(CX, CY, R - 2.5, Math.PI * 1.15, Math.PI * 1.55);
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.95)';
+    ctx.lineWidth = 2.5;
+    ctx.lineCap = 'round';
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(CX, CY, R - 2.5, Math.PI * 0.25, Math.PI * 0.5);
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.55)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    pctNum.textContent = Math.round(PCT * 100 * p);
+    requestAnimationFrame(draw);
+  }
+  requestAnimationFrame(draw);
+})();
+</script>
+</body>
+</html>
